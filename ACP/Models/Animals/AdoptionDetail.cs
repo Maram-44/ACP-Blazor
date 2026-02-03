@@ -6,5 +6,7 @@
         public int CustomerId { get; set; }
         public string OperationStatus { get; set; } = null!;
         public string? ReasonForRejection { get; set; }
+
+        public Animal AnimalDTO { get; set; }
     }
 }

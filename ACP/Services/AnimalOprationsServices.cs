@@ -17,7 +17,7 @@ namespace ACP.Services
         public async Task<int> CreateAdoption(AdoptionDetail adoptionDetail)
         {
             var response = await _http.PostAsJsonAsync(
-                "api/AnimalOprations/Adoption",
+                "api/AnimalOprations/create-adoption-full",
                 adoptionDetail
             );
 
@@ -38,7 +38,7 @@ namespace ACP.Services
         public async Task<int> CreateFosterCare(FosterCare fosterCare)
         {
             var response = await _http.PostAsJsonAsync(
-                "api/AnimalOprations/FosterCare",
+                "api/AnimalOprations/foster-with-animal",
                 fosterCare
             );
 

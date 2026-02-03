@@ -7,6 +7,6 @@ namespace ACP.Models.Animals
         public string SurgicalOperation { get; set; } = null!;
         public int AnimalId { get; set; }
         public DateTime? Date { get; set; }
-        public string OperationStatus { get; set; } = null!;
+        public string? OperationStatus { get; set; }
     }
 }

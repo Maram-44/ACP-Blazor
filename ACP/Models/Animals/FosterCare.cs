@@ -10,5 +10,7 @@ namespace ACP.Models.Animals
         public DateTime ArrivalDate { get; set; }
         public DateTime WithdrawalDate { get; set; }
         public decimal? Cost { get; set; }
+
+        public Animal animalDTO { get; set; }
     }
 }
