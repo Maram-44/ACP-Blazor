@@ -1,0 +1,61 @@
+﻿@namespace ACP.Components.BrowseAnimals
+
+<section class="relative bg-gradient-to-br from-[#EA580C] to-[#FB923C] pt-32 lg:pt-48 pb-20 overflow-hidden shadow-inner">
+
+    @* كلمة الخلفية الجمالية *@
+    <div class="absolute top-20 left-10 text-white/[0.06] text-[8rem] lg:text-[12rem] font-black pointer-events-none select-none uppercase tracking-tighter z-0">
+        Animal
+    </div>
+
+    <div class="container mx-auto px-6 md:px-12 lg:px-32 relative z-10">
+        <div class="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+
+            @* 1. قسم النص *@
+            <div class="w-full lg:flex-1 text-center lg:text-left order-2 lg:order-1">
+                <h2 class="text-4xl md:text-5xl lg:text-7xl font-black text-white leading-tight mb-6">
+                    Key Sectors <br /> <span class="text-orange-100">We Serve</span>
+                </h2>
+                <p class="text-orange-50 text-base lg:text-lg mb-8 opacity-90 max-w-md mx-auto lg:mx-0 leading-relaxed font-medium">
+                    Find your perfect companion from our diverse categories of pets ready for a new home.
+                </p>
+                <div class="flex justify-center lg:justify-start">
+                    <button class="px-8 py-3 bg-white text-[#EA580C] font-bold rounded-2xl shadow-xl hover:bg-orange-50 transition-all transform hover:scale-105 active:scale-95">
+                        Learn more
+                    </button>
+                </div>
+            </div>
+
+            @* 2. قسم الصور الإبداعي (متساوي الأحجام ومتفاعل) *@
+            <div class="w-full lg:flex-1 order-1 lg:order-2">
+                <div class="relative h-[350px] md:h-[450px] w-full max-w-md mx-auto flex items-center justify-center">
+
+                    @* حاوية الصور الثلاث المتساوية *@
+                    @* الصورة الأولى (يسار - أعلى) *@
+                    <div class="absolute transform -translate-x-16 -translate-y-12 lg:-translate-x-24 lg:-translate-y-20 w-40 h-40 md:w-56 md:h-56 rounded-[2.5rem] bg-white p-2 shadow-2xl transition-all duration-500 hover:z-50 hover:scale-110 rotate-[-8deg] hover:rotate-0 group">
+                        <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1" class="w-full h-full object-cover rounded-[2rem]" alt="Dog" />
+                    </div>
+
+                    @* الصورة الثانية (يمين - منتصف) *@
+                    <div class="absolute transform translate-x-12 lg:translate-x-20 w-40 h-40 md:w-56 md:h-56 rounded-[2.5rem] bg-white p-2 shadow-2xl transition-all duration-500 hover:z-50 hover:scale-110 rotate-[12deg] hover:rotate-0 group">
+                        <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba" class="w-full h-full object-cover rounded-[2rem]" alt="Cat" />
+                    </div>
+
+                    @* الصورة الثالثة (أسفل - منتصف) *@
+                    <div class="absolute transform -translate-x-4 translate-y-24 lg:translate-y-32 w-40 h-40 md:w-56 md:h-56 rounded-[2.5rem] bg-white p-2 shadow-2xl transition-all duration-500 hover:z-50 hover:scale-110 rotate-[-5deg] hover:rotate-0 group">
+                        <img src="https://images.unsplash.com/photo-1592194996308-7b43878e84a6" class="w-full h-full object-cover rounded-[2rem]" alt="Kitten" />
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        @* 3. الفلتر العائم (ChildContent) *@
+        <div class="mt-20 lg:mt-30 relative z-50">
+            @ChildContent
+        </div>
+    </div>
+</section>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
