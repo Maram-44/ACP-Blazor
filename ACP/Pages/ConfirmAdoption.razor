@@ -1,0 +1,38 @@
+﻿@page "/confirm-adoption"
+@layout Empty
+@using ACP.Models.Animals
+@using ACP.Forms
+@using ACP.Layout
+@inject AnimalOprationsServices AnimalOprationsService
+@inject NavigationManager Navigation
+
+<div class="max-w-5xl mx-auto py-12 px-4">
+
+    <ConfirmAnimalRequest Animal="animal" Mode="Adoption" />
+
+</div>
+
+@code {
+
+    private Animal animal = new()
+    {
+        Name = "Luna",
+        Gender = "Female",
+        Color = "White",
+        Description = "Friendly and calm cat.",
+        Nationality = "Unknown",
+        City = "Dubai",
+        Country = "UAE",
+        PassportNumber = "",
+        AnimalVaccination = new List<AnimalVaccination>
+        {
+            new() { Vaccination = "Rabies" },
+            new() { Vaccination = "Parvovirus" }
+        },
+        animalSurgicalOperations = new List<AnimalSurgicalOperation>
+        {
+            new() { SurgicalOperation = "Neutering", OperationStatus = "Completed" }
+        }
+    };
+
+}

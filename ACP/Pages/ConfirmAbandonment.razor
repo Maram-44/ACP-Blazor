@@ -1,0 +1,27 @@
+﻿@page "/confirm-abandonment"
+@layout Empty
+@using ACP.Models.Animals
+@using ACP.Forms
+@using ACP.Layout
+
+<div class="max-w-5xl mx-auto py-12 px-4">
+
+    <ConfirmAnimalRequest Animal="animal" Mode="Abandonment" />
+
+</div>
+
+@code {
+
+    private Animal animal = new()
+    {
+        Name = "Rocky",
+        Gender = "Male",
+        Color = "Brown",
+        Description = "Energetic dog.",
+        Nationality = "Unknown",
+        City = "Riyadh",
+        Country = "Saudi Arabia",
+        PassportNumber = "12345"
+    };
+
+}
