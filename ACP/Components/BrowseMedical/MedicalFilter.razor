@@ -1,0 +1,49 @@
+﻿@namespace ACP.Components.MedicalCenters
+
+<div class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 -mt-12 relative z-50 mb-20 mx-4" dir="ltr">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+
+        @* City Filter *@
+        <div class="flex flex-col text-left">
+            <label class="block text-xs font-black text-gray-900 mb-3 uppercase ml-2 tracking-tighter">📍 Find by City</label>
+            <div class="relative">
+                <select @bind="SelectedCity" @bind:after="AutoApply"
+                        class="w-full bg-gray-50 border border-gray-100 p-4 pl-10 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none font-bold text-gray-700 appearance-none cursor-pointer">
+                    <option value="all">All Cities</option>
+                    @if (Cities != null)
+                    {
+                        @foreach (var city in Cities)
+                        {
+                            <option value="@city">@city</option>
+                        }
+                    }
+                </select>
+                @* Custom arrow for LTR *@
+                <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
+        </div>
+
+        @* Service Type Filter *@
+        <div class="flex flex-col text-left">
+            <div>
+                <label class="block text-xs font-black text-gray-900 mb-3 uppercase ml-2 tracking-tighter">🛠 Service Type</label>
+                <div class="flex bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
+                    <button @onclick='() => SetService("all")'
+                            class='flex-1 py-3 rounded-xl transition-all @(SelectedService == "all" ? "bg-white shadow-sm text-orange-600 font-bold" : "text-gray-500")'>
+                        All
+                    </button>
+                    <button @onclick='() => SetService("medical")'
+                            class='flex-1 py-3 rounded-xl transition-all @(SelectedService == "medical" ? "bg-white shadow-sm text-orange-600 font-bold" : "text-gray-500")'>
+                        Medical
+                    </button>
+                    <button @onclick='() => SetService("beauty")'
+                            class='flex-1 py-3 rounded-xl transition-all @(SelectedService == "beauty" ? "bg-white shadow-sm text-orange-600 font-bold" : "text-gray-500")'>
+                        Grooming
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
