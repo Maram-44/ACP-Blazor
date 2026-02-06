@@ -1,0 +1,158 @@
+﻿@page "/animal-details/{AnimalId:int}"
+@using ACP.Models.Animals
+
+<div class="min-h-screen bg-[#F8FAFC] py-12 px-4 sm:px-6 lg:px-8 mt-10 font-sans">
+    @if (isLoading)
+    {
+        <div class="flex flex-col items-center justify-center py-20">
+            <div class="w-12 h-12 border-4 border-[#EA580C] border-t-transparent rounded-full animate-spin"></div>
+            <p class="mt-4 text-[#64748B] font-medium tracking-wide">Fetching animal details...</p>
+        </div>
+    }
+    else if (AnimalItem != null)
+    {
+        <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
+
+            <div class="lg:col-span-5 space-y-6">
+                <div class="relative bg-white rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200 group">
+                    <div class="relative h-[500px]">
+                        @if (AnimalItem.animalImages?.Any() == true)
+                        {
+                            <img src="@AnimalItem.animalImages.ElementAt(currentImageIndex).Image"
+                                 class="w-full h-full object-cover transition-all duration-500"
+                                 alt="Animal Image" />
+                        }
+                        else
+                        {
+                            <div class="w-full h-full bg-slate-200 flex items-center justify-center">
+                                <i class="fas fa-paw text-5xl text-slate-400"></i>
+                            </div>
+                        }
+
+                    <div class="absolute inset-0 flex items-center justify-between px-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button @onclick="PrevImg" class="bg-white/90 p-4 rounded-full shadow-xl text-[#EA580C] hover:bg-white transition-transform active:scale-90">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button @onclick="NextImg" class="bg-white/90 p-4 rounded-full shadow-xl text-[#EA580C] hover:bg-white transition-transform active:scale-90">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="absolute bottom-0 left-0 right-0 p-10 bg-gradient-to-t from-[#0F172A] via-[#0F172A]/40 to-transparent">
+                        <h1 class="text-5xl font-black text-white mb-2">@AnimalItem.Name</h1>
+                        <span class="px-4 py-1 bg-white/20 backdrop-blur-md border border-white/30 rounded-full text-white text-xs font-bold tracking-[0.2em] uppercase">@AnimalItem.Status</span>
+                    </div>
+                </div>
+
+                <div class="bg-[#0F172A] p-8 grid grid-cols-3 gap-4 text-center text-white">
+                    <div class="flex flex-col items-center">
+                        <i class="fas fa-venus-mars text-[#EA580C] mb-2 text-xl"></i>
+                        <p class="text-[10px] opacity-50 uppercase font-black tracking-widest">Gender</p>
+                        <p class="font-bold text-sm">@AnimalItem.Gender</p>
+                    </div>
+                    <div class="border-x border-white/10 flex flex-col items-center">
+                        <i class="fas fa-palette text-[#EA580C] mb-2 text-xl"></i>
+                        <p class="text-[10px] opacity-50 uppercase font-black tracking-widest">Color</p>
+                        <p class="font-bold text-sm">@AnimalItem.Color</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <i class="fas fa-clock text-[#EA580C] mb-2 text-xl"></i>
+                        <p class="text-[10px] opacity-50 uppercase font-black tracking-widest">Year</p>
+                        <p class="font-bold text-sm">@AnimalItem.BirthDate.Year</p>
+                    </div>
+                </div>
+            </div>
+
+            <button @onclick="HandleAdoptionClick"
+                    disabled="@(AnimalItem.Status?.ToLower() != "available")"
+                    class="w-full py-6 rounded-3xl font-black text-2xl text-white shadow-2xl transition-all
+                        @(AnimalItem.Status?.ToLower() == "available"
+                                                                    ? "bg-[#EA580C] hover:bg-black hover:scale-[1.02] shadow-orange-600/30"
+                                                                    : "bg-slate-300 cursor-not-allowed shadow-none")">
+                <i class="fas fa-heart mr-3"></i>
+                @(AnimalItem.Status?.ToLower() == "available" ? "ADOPT THIS FRIEND" : "NOT AVAILABLE")
+            </button>
+        </div>
+
+            <div class="lg:col-span-7 space-y-8">
+                <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
+                    <h3 class="text-2xl font-black text-[#0F172A] mb-8 flex items-center gap-4">
+                        <span class="w-2.5 h-10 bg-[#EA580C] rounded-full"></span> General Information
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="group p-5 bg-[#F8FAFC] hover:bg-orange-50 rounded-2xl transition-colors flex justify-between items-center border border-slate-50">
+                            <span class="text-[#64748B] text-[11px] font-black uppercase tracking-widest">Nationality</span>
+                            <span class="text-[#0F172A] font-extrabold">@AnimalItem.Nationality</span>
+                        </div>
+                        <div class="group p-5 bg-[#F8FAFC] hover:bg-orange-50 rounded-2xl transition-colors flex justify-between items-center border border-slate-50">
+                            <span class="text-[#64748B] text-[11px] font-black uppercase tracking-widest">Origin City</span>
+                            <span class="text-[#0F172A] font-extrabold">@AnimalItem.City</span>
+                        </div>
+                        <div class="group p-5 bg-[#F8FAFC] hover:bg-orange-50 rounded-2xl transition-colors flex justify-between items-center border border-slate-50">
+                            <span class="text-[#64748B] text-[11px] font-black uppercase tracking-widest">Domesticated?</span>
+                            <span class="px-3 py-1 bg-white text-[#EA580C] rounded-lg text-xs font-black shadow-sm">@(AnimalItem.IsAnimalTame ? "YES" : "NO")</span>
+                        </div>
+                        <div class="group p-5 bg-[#F8FAFC] hover:bg-orange-50 rounded-2xl transition-colors flex justify-between items-center border border-slate-50">
+                            <span class="text-[#64748B] text-[11px] font-black uppercase tracking-widest">Pet Status</span>
+                            <span class="px-3 py-1 bg-white text-[#EA580C] rounded-lg text-xs font-black shadow-sm">@(AnimalItem.IsPet ? "PET" : "WILD")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
+                    <h3 class="text-2xl font-black text-[#0F172A] mb-8 flex items-center gap-4">
+                        <i class="fas fa-notes-medical text-[#2563EB] text-3xl"></i> Medical Records
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="bg-[#EFF6FF] p-8 rounded-[2.5rem] border border-blue-50">
+                            <h4 class="text-[11px] font-black text-[#2563EB] uppercase mb-6 tracking-[0.3em]">Vaccinations</h4>
+                            <div class="space-y-3">
+                            @if (AnimalItem.AnimalVaccination?.Any() == true)
+                                {
+                                    @foreach (var v in AnimalItem.AnimalVaccination)
+                                    {
+                                        <div class="bg-white p-4 rounded-xl text-sm font-bold text-slate-700 shadow-sm flex items-center gap-3">
+                                            <i class="fas fa-shield-alt text-[#2563EB]"></i> @v.Vaccination
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="text-xs text-slate-400 italic">No vaccination records available.</p>
+                                }
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-200">
+                            <h4 class="text-[11px] font-black text-[#64748B] uppercase mb-6 tracking-[0.3em]">Surgeries</h4>
+                            <div class="space-y-3">
+                                @if (AnimalItem.animalSurgicalOperations?.Any() == true)
+                                {
+                                    @foreach (var s in AnimalItem.animalSurgicalOperations)
+                                    {
+                                        <div class="bg-white p-4 rounded-xl text-sm font-bold text-slate-700 shadow-sm flex flex-col gap-1">
+                                            <div class="flex justify-between items-center">
+                                                <span>@s.SurgicalOperation</span>
+                                                <span class="text-[10px] text-[#EA580C] font-black uppercase">@s.OperationStatus</span>
+                                            </div>
+                                            <span class="text-[10px] text-slate-400">@s.Date?.ToShortDateString()</span>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="text-xs text-slate-400 italic">No surgery records recorded.</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-[#FFF7ED] p-10 rounded-[3rem] border border-orange-100 relative overflow-hidden group">
+                    <i class="fas fa-quote-right absolute -right-6 -top-6 text-orange-200/40 text-9xl group-hover:scale-110 transition-transform"></i>
+                    <h3 class="text-xs font-black text-[#EA580C] uppercase tracking-[0.4em] mb-4">Description</h3>
+                    <p class="text-[#64748B] leading-relaxed text-xl italic font-serif relative z-10">"@AnimalItem.Description"</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
