@@ -14,8 +14,8 @@
         public DateTime BirthDate { get; set; }
         public DateTime? DateOfDeath { get; set; }
         public string Status { get; set; }
-        public bool IsPet { get; set; } = false;
-        public bool IsAnimalTame { get; set; } = false;
+        public bool IsPet { get; set; }
+        public bool IsAnimalTame { get; set; }
         public string Country { get; set; } = null!;
         public string City { get; set; } = null!;
         public int? CustomerID { get; set; }
@@ -23,19 +23,5 @@
         public ICollection<AnimalImage>? animalImages { get; set; }
         public ICollection<AnimalSurgicalOperation>? animalSurgicalOperations { get; set; }
         public ICollection<AnimalVaccination>? AnimalVaccination { get; set; }
-    }
-
-
-}
-
-namespace ACP.Models.Animals
-{
-    public class AdoptionDetailDTO
-    {
-        public int? AnimalId { get; set; }
-        public int CustomerId { get; set; }
-        public string OperationStatus { get; set; } = string.Empty;
-        public string? ReasonForRejection { get; set; }
-
     }
 }
