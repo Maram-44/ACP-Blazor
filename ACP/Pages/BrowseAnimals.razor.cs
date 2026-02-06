@@ -6,77 +6,96 @@ namespace ACP.Pages;
 
 public partial class BrowseAnimals
 {
+    // 1. حقن الخدمات المطلوبة
     [Inject] private AnimalServices AnimalService { get; set; } = default!;
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
 
+    // القوائم التي سيتم جلبها من الـ API
     public List<Animal>? AnimalsList { get; set; }
+    public List<AnimalType>? AnimalTypes { get; set; } // قائمة الأنواع الديناميكية
 
-    // المتغيرات التي كانت تسبب الخطأ
+    // المتغيرات الخاصة بالفلترة
     private string searchText = "";
     private int selectedTypeId = 0;
     private string selectedAgeRange = "all";
+
+    // المتغيرات الخاصة بالـ Pagination
+    private int pageSize = 8;
+    private int currentPageSize = 8;
 
     // منطق الفلترة الشامل (الاسم + النوع + العمر)
     private IEnumerable<Animal> FilteredAnimals =>
         (AnimalsList ?? new List<Animal>()).Where(a =>
             (string.IsNullOrWhiteSpace(searchText) || a.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)) &&
             (selectedTypeId == 0 || a.animalTypeId == selectedTypeId) &&
-            FilterByAge(a) // استدعاء دالة فلترة العمر
+            FilterByAge(a)
         );
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            var result = await AnimalService.GetAllAnimalsForAdoption();
-            if (result != null) AnimalsList = result.ToList();
+            // جلب البيانات من الـ API بشكل متوازي لتحسين الأداء
+            var animalsTask = AnimalService.GetAllAnimalsForAdoption();
+            var typesTask = AnimalService.GetAnimalTypes(); 
+
+            await Task.WhenAll(animalsTask, typesTask);
+
+            if (animalsTask.Result != null)
+            {
+                AnimalsList = animalsTask.Result.ToList();
+            }
+
+            if (typesTask.Result != null)
+            {
+                AnimalTypes = typesTask.Result.ToList();
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
-            AnimalsList = new List<Animal>();
+            Console.WriteLine($"Error fetching data from API: {ex.Message}");
+            AnimalsList ??= new List<Animal>();
+            AnimalTypes ??= new List<AnimalType>();
         }
     }
 
-    // الدالة التي كانت تسبب الخطأ
-    private void HandleAgeChange(string val)
+    // التعامل مع تغييرات الفلاتر
+    private void HandleSearch(string val) { searchText = val; ResetPagination(); }
+    private void HandleTypeChange(int val) { selectedTypeId = val; ResetPagination(); }
+    private void HandleAgeChange(string val) { selectedAgeRange = val; ResetPagination(); }
+
+    // إعادة تصغير القائمة عند تغيير الفلتر
+    private void ResetPagination()
     {
-        selectedAgeRange = val;
+        currentPageSize = pageSize;
         StateHasChanged();
     }
 
-    private void HandleSearch(string val) { searchText = val; StateHasChanged(); }
-    private void HandleTypeChange(int val) { selectedTypeId = val; StateHasChanged(); }
-
-    private void HandleViewAnimalProfile(int? id) => Console.WriteLine($"ID: {id}");
-
-    private int pageSize = 8; // عدد الكروت التي تظهر في كل مرة (مثلاً صفين)
-    private int currentPageSize = 8; // القيمة الحالية المعروضة
-
+    // منطق الـ Load More
     private void LoadMore()
-{
-    // نزيد العدد بمقدار 4 (صف إضافي في المتصفح)
-    currentPageSize += 4;
-    
-    // لإعطاء إيحاء بالتحميل، يمكنك إضافة تأخير بسيط (اختياري)
-    // StateHasChanged(); 
-}
+    {
+        currentPageSize += 4;
+        StateHasChanged();
+    }
 
-// دالة تصفير الفلتر التي كتبناها سابقاً يجب أن تصفر الـ Pagination أيضاً
-private void ClearFilters()
-{
-    searchText = string.Empty;
-    selectedTypeId = 0;
-    selectedAgeRange = "all";
-    currentPageSize = pageSize; // إعادة العرض للعدد الأصلي
-    StateHasChanged();
-}
+    // تصفير الفلاتر والعودة للعدد الأصلي
+    private void ClearFilters()
+    {
+        searchText = string.Empty;
+        selectedTypeId = 0;
+        selectedAgeRange = "all";
+        currentPageSize = pageSize;
+        StateHasChanged();
+    }
 
-    // منطق حساب العمر بناءً على تاريخ الميلاد في المودل
+    // منطق حساب العمر بناءً على تاريخ الميلاد
     private bool FilterByAge(Animal animal)
     {
         if (selectedAgeRange == "all") return true;
 
+        // حساب العمر بدقة (السنوات)
         var ageInYears = DateTime.Now.Year - animal.BirthDate.Year;
+        if (animal.BirthDate.Date > DateTime.Now.AddYears(-ageInYears)) ageInYears--;
 
         return selectedAgeRange switch
         {
@@ -87,11 +106,12 @@ private void ClearFilters()
         };
     }
 
-    //private void ClearFilters()
-    //{
-    //    searchText = string.Empty;
-    //    selectedTypeId = 0;
-    //    selectedAgeRange = "all";
-    //    StateHasChanged(); // هذا السطر يخبر الواجهة أن القيم تغيرت ليعيد رسم الكروت
-    //}
+    // الانتقال لصفحة البروفايل (التفاصيل)
+    private void HandleViewAnimalProfile(int? id)
+    {
+        if (id.HasValue)
+        {
+            Navigation.NavigateTo($"/animal-details/{id.Value}");
+        }
+    }
 }

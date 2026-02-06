@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using ACP.Models.Animals; // تأكدي من إضافة هذا المسار للوصول لموديل AnimalType
 
 namespace ACP.Components.BrowseAnimals;
 
@@ -6,11 +7,14 @@ public partial class AnimalFilter
 {
     [Parameter] public string SearchText { get; set; } = "";
     [Parameter] public int SelectedTypeId { get; set; } = 0;
-    [Parameter] public string SelectedAgeRange { get; set; } = "all"; // الجديد
+    [Parameter] public string SelectedAgeRange { get; set; } = "all";
+
+    // الأضافة الجديدة: استقبال قائمة الأنواع من صفحة BrowseAnimals
+    [Parameter] public List<AnimalType>? AnimalTypes { get; set; }
 
     [Parameter] public EventCallback<string> OnSearchChanged { get; set; }
     [Parameter] public EventCallback<int> OnTypeChanged { get; set; }
-    [Parameter] public EventCallback<string> OnAgeChanged { get; set; } // الجديد
+    [Parameter] public EventCallback<string> OnAgeChanged { get; set; }
 
     private async Task OnSearchInput(ChangeEventArgs e)
     {
