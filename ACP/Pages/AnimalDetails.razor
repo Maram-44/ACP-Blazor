@@ -1,0 +1,173 @@
+﻿@page "/animal-profile/{AnimalId:int}"
+@using ACP.Models.Animals
+@namespace ACP.Pages
+
+<style>
+    .animal-card {
+        background: linear-gradient(135deg, #EA580C 0%, #0F172A 100%);
+        border-radius: 1.5rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .image-counter {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: bold;
+        z-index: 10;
+    }
+
+    .nav-arrow-btn {
+        width: 2.5rem;
+        height: 2.5rem;
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        color: #1f2937;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+        .nav-arrow-btn:hover {
+            background-color: #EA580C !important;
+            color: white !important;
+            transform: scale(1.1);
+        }
+
+    .adopt-btn {
+        background: #EA580C;
+        color: white;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
+        cursor: pointer;
+    }
+
+        .adopt-btn:hover {
+            background: #000;
+            transform: translateY(-2px);
+        }
+
+    .info-card {
+        background-color: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(234, 88, 12, 0.15);
+    }
+
+    .health-item-compact {
+        padding: 0.75rem;
+        margin-bottom: 0.6rem;
+        background-color: #F8FAFC;
+        border-radius: 0.75rem;
+        border-left: 4px solid #EA580C;
+    }
+</style>
+
+<main class="container mx-auto px-4 py-8 mt-24 text-left" dir="ltr">
+    @if (isLoading)
+    {
+        <div class="flex flex-col items-center justify-center py-40">
+            <div class="w-16 h-16 border-4 border-[#EA580C] border-t-transparent rounded-full animate-spin"></div>
+            <p class="mt-6 text-[#64748B] font-bold">Loading Details...</p>
+        </div>
+    }
+    else if (AnimalItem == null)
+    {
+        <div class="max-w-2xl mx-auto p-12 bg-white rounded-[2rem] border-2 border-dashed border-slate-200 text-center shadow-sm">
+            <i class="fas fa-search text-slate-300 text-4xl mb-6"></i>
+            <h2 class="text-2xl font-black text-slate-800">Animal Not Found</h2>
+            <a href="/browse-animals" class="adopt-btn inline-block mt-8 px-10 py-4 rounded-2xl no-underline">Back to Browse</a>
+        </div>
+    }
+    else
+    {
+        <div class="flex flex-col lg:flex-row gap-10">
+          
+            <div class="lg:w-2/5">
+                <div class="animal-card relative">
+                    <div class="relative h-[320px]">
+                        @if (AnimalItem.animalImages != null && AnimalItem.animalImages.Any())
+                        {
+                            <div class="image-counter">@(currentImageIndex + 1) / @AnimalItem.animalImages.Count</div>
+                        }
+                        <img src="@(AnimalItem.animalImages?.ElementAtOrDefault(currentImageIndex)?.Image ?? "https://via.placeholder.com/400")" class="w-full h-full object-cover" />
+                        <div class="absolute inset-0 flex items-center justify-between px-4">
+                            <button @onclick="PrevImg" class="nav-arrow-btn"><i class="fas fa-chevron-left"></i></button>
+                            <button @onclick="NextImg" class="nav-arrow-btn"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-white/5 backdrop-blur-sm text-white text-center">
+                        <div class="grid grid-cols-3 gap-2">
+                            <div><div class="text-lg font-bold">@AnimalItem.Gender</div><div class="text-[10px] uppercase opacity-60">Gender</div></div>
+                            <div class="border-x border-white/20"><div class="text-lg font-bold">Local</div><div class="text-[10px] uppercase opacity-60">Breed</div></div>
+                            <div><div class="text-lg font-bold">Cat</div><div class="text-[10px] uppercase opacity-60">Type</div></div>
+                        </div>
+                    </div>
+                </div>
+                <button @onclick="HandleAdoptionClick" class="adopt-btn w-full mt-8 py-5 rounded-3xl flex items-center justify-center text-xl uppercase tracking-widest">
+                    <i class="fas fa-heart mr-3"></i> Adopt This Animal
+                </button>
+            </div>
+
+         
+            <div class="lg:w-3/5 space-y-8">
+                <h1 class="text-3xl font-black text-[#0F172A]">Animal Details</h1>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="info-card p-8">
+                        <h3 class="font-bold text-gray-800 mb-6 flex items-center"><i class="fas fa-paw mr-3 text-[#EA580C]"></i> Information</h3>
+                        <div class="space-y-4 text-sm">
+                            <div class="flex justify-between border-b pb-2"><span>Name</span><span class="font-bold">@AnimalItem.Name</span></div>
+                            <div class="flex justify-between"><span>Status</span><span class="font-bold text-[#EA580C]">@AnimalItem.Status</span></div>
+                        </div>
+                    </div>
+
+                  
+                    <div class="info-card p-8 md:col-span-2">
+                        <h3 class="font-bold text-gray-800 mb-6 flex items-center"><i class="fas fa-heartbeat mr-3 text-[#EA580C]"></i> Health</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
+                            <div>
+                                <h4 class="font-bold text-gray-400 mb-3 uppercase">Vaccinations</h4>
+                                @foreach (var v in AnimalItem.AnimalVaccination ?? new List<AnimalVaccination>())
+                                {
+                                    <div class="health-item-compact flex justify-between">
+                                        <span>@v.Vaccination</span><i class="fas fa-check-circle text-green-500"></i>
+                                    </div>
+                                }
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-400 mb-3 uppercase">Operations</h4>
+                                @foreach (var s in AnimalItem.animalSurgicalOperations ?? new List<AnimalSurgicalOperation>())
+                                {
+                                    <div class="health-item-compact" style="border-left-color: #10b981;">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <div class="font-bold">@s.SurgicalOperation</div>
+                                                @if (s.Date.HasValue)
+                                                {
+                                                    <div class="text-[10px] text-gray-400 mt-1">
+                                                        <i class="far fa-clock"></i> @s.Date.Value.ToString("MMM dd, yyyy - hh:mm tt")
+                                                    </div>
+                                                }
+                                            </div>
+                                            <span class="text-[10px] text-green-600 font-bold px-1 bg-green-50 rounded">@s.OperationStatus</span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</main>

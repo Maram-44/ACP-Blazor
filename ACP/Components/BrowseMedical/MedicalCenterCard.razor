@@ -1,0 +1,39 @@
+﻿@namespace ACP.Components.MedicalCenters
+
+<div class="bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 hover:shadow-2xl transition-all duration-500 group text-left mb-6 h-full flex flex-col" dir="ltr">
+    @* Image Section *@
+    <div class="relative h-64 overflow-hidden">
+        <img src="@ImageUrl" class="w-full h-full object-cover group-hover:scale-110 transition duration-700" alt="@Title">
+
+        @* Professional Badges based on Booking Type *@
+        <div class="absolute top-4 right-4 backdrop-blur px-4 py-1.5 rounded-full text-[10px] font-bold border uppercase tracking-wider
+            @(IsInstantBooking ? "bg-white/90 text-orange-600 border-orange-100" : "bg-gray-900 text-white border-gray-700")">
+            <span class="flex items-center gap-1">
+                @if (IsInstantBooking) { <i class="fas fa-bolt text-[8px]"></i> }
+                else { <i class="fas fa-phone-alt text-[8px]"></i> }
+                @(IsInstantBooking ? "API DIRECT" : "PHONE BOOKING")
+            </span>
+        </div>
+    </div>
+
+    @* Content Section *@
+    <div class="p-8 flex flex-col flex-grow">
+        <h3 class="text-2xl font-bold text-gray-900 mb-2 group-hover:text-orange-500 transition-colors uppercase">@Title</h3>
+        <p class="text-gray-500 text-sm mb-6 leading-relaxed line-clamp-2">@Description</p>
+
+        <div class="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between">
+            <div class="flex flex-col">
+                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Location</span>
+                <span class="text-sm font-bold text-slate-700">@Location</span>
+            </div>
+
+            @* Conditional Button Styling *@
+            <button @onclick="HandleClick" class="px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300
+                @(IsInstantBooking
+                    ? "bg-orange-500 text-white hover:bg-orange-600 shadow-lg shadow-orange-200"
+                    : "bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white")">
+                @(IsInstantBooking ? "Instant Book" : "Contact Now")
+            </button>
+        </div>
+    </div>
+</div>

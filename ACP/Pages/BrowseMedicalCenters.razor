@@ -1,0 +1,56 @@
+﻿@page "/medical-centers"
+@namespace ACP.Pages
+@using ACP.Components.MedicalCenters
+
+<div class="min-h-screen bg-[#FDFDFD]">
+    @* 1. Hero Section *@
+    <MedicalHero TitlePart1="Premium Care"
+                 TitlePart2="For Your Pets"
+                 BadgeText="Your Pet's Health is Our Priority ✨" />
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        @* 2. Filter Section *@
+        <MedicalFilter Cities="AvailableCities"
+                       OnFilterChanged="HandleFilterChanged" />
+
+        @* 3. Results Section *@
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20 mt-10">
+            @if (IsLoading)
+            {
+                @* Loading Indicator *@
+                <div class="col-span-full text-center py-20">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-4 border-orange-500 border-opacity-50"></div>
+                    <p class="mt-4 text-gray-400 font-medium">Fetching medical centers...</p>
+                </div>
+            }
+            else if (FilteredCenters != null && FilteredCenters.Any())
+            {
+                @foreach (var center in FilteredCenters)
+                {
+                    @* استخراج البيانات من أول خدمة متاحة في المركز *@
+                    var firstService = center.medicalCenterServices?.FirstOrDefault();
+
+                    <MedicalCenterCard Title="@center.Name"
+                                       @* نستخدم اسم الخدمة كوصف، وإذا لم يوجد نستخدم الشارع *@
+                                       Description="@(firstService?.ServiceName ?? $"{center.Street}, {center.City}")"
+                                       @* نستخدم صورة الخدمة، وإذا لم توجد نضع صورة افتراضية *@
+                                       ImageUrl="@(string.IsNullOrEmpty(firstService?.Image) ? "images/default-clinic.jpg" : firstService.Image)"
+                                       Location="@center.City"
+                                       @* التاج يعرض نوع أول خدمة (Grooming /Medical) *@
+                                       IsInstantBooking="false" @* بما أن الموديل يعتمد على Phone حالياً *@
+                                       OnViewDetails="() => NavigateToDetails(center.Id ?? 0)" />
+                }
+            }
+            else
+            {
+                @* Empty State *@
+                <div class="col-span-full text-center py-20">
+                    <div class="bg-gray-50 rounded-[3rem] p-12 border-2 border-dashed border-gray-200">
+                        <h3 class="text-2xl font-bold text-gray-400">No medical centers found matching your criteria.</h3>
+                        <button @onclick="ResetFilters" class="mt-4 text-orange-500 font-bold hover:underline">Reset Filters</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

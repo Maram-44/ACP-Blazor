@@ -1,17 +1,20 @@
 ﻿<CascadingAuthenticationState>
-<Router AppAssembly="@typeof(App).Assembly">
-    <Found Context="routeData">
+    <Router AppAssembly="@typeof(Program).Assembly">
+        <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
-                    <p>عذراً، أنت غير مخول للدخول لهذه الصفحة.</p>
+                    <div class="p-10 text-center">
+                        <p class="text-xl font-bold text-slate-800">Please Login to proceed.</p>
+                        <a href="LogIn" class="text-orange-600 underline">Login here</a>
+                    </div>
                 </NotAuthorized>
             </AuthorizeRouteView>
-    </Found>
-    <NotFound>
-        <PageTitle>Not found</PageTitle>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
             <LayoutView Layout="@typeof(MainLayout)">
-                <p>الصفحة غير موجودة.</p>
+                <p role="alert">Sorry, there's nothing at this address.</p>
             </LayoutView>
-    </NotFound>
-</Router>
+        </NotFound>
+    </Router>
 </CascadingAuthenticationState>
