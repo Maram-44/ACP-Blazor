@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ACP.Application.DTOs.Products
+namespace ACP.Models.Products
 {
-    public class ItemsCategoryDTO
+    public class ItemsCategory
     {
         public int CategoryId { get; set; }
         public string CategoryName { get; set; } = null!;

@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ACP.Application.DTOs.Products
+namespace ACP.Models.Products
 {
-    public class OrderItemDTO
+    public class OrderItem
     {
         public int? Id { get; set; }
         public int QTY { get; set; }

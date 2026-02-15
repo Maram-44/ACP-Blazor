@@ -1,7 +1,6 @@
 using ACP;
 using ACP.Services;
 using Blazored.LocalStorage;
-
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -10,9 +9,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
-builder.Services.AddAuthorizationCore();
-builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddScoped<AuthenticationStateProvider, SmartAuthStateProvider>();
 
 //builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
@@ -43,11 +39,21 @@ builder.Services.AddHttpClient<AccountService>((sp, client) =>
     client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
 });
 
+builder.Services.AddHttpClient<BasketService>((sp, client) =>
+{
+    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
+});
+
+builder.Services.AddHttpClient<ProductService>((sp, client) =>
+{
+    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
+});
+
 builder.Services.AddAuthorizationCore();
 
 //builder.Services.AddAuthorizationCore(options =>
 //{
-//    // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//    // ÓíÇÓÉ ÊãäÚ ÇáÏÎæá ÅáÇ áãä Ãßãá ãáÝå ÇáÔÎÕí
 //    options.AddPolicy("CompletedProfileOnly", policy =>
 //        policy.RequireClaim("IsProfileCompleted", "true"));
 //});

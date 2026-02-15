@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ACP.Application.DTOs.Products
+﻿
+namespace ACP.Models.Products
 {
-    public class ItemDTO
+    public class Item
     {
         public int? ItemId { get; set; }
         public string ItemName { get; set; } = null!;
@@ -24,7 +18,7 @@ namespace ACP.Application.DTOs.Products
         public int CategoryId { get; set; }
         public int? OwnerId { get; set; }
 
-        public ICollection<ItemPhotoDTO> itemPhoto { get; set; }
+        public ICollection<ItemPhoto> itemPhoto { get; set; }
 
     }
 }

@@ -1,14 +1,13 @@
-﻿using ACP.Domain.Entities.Productes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ACP.Application.DTOs.Products
+namespace ACP.Models.Products
 {
-    public class OrderDTO
+    public class Order
     {
         public int? OrderId { get; set; }
         public DateTime Date { get; set; }
@@ -19,6 +18,6 @@ namespace ACP.Application.DTOs.Products
         public decimal Tax { get; set; }
         public decimal DeliveryFee { get; set; }
         public decimal TotalPrice { get; set; }
-        public ICollection<OrderItemDTO> orderItems { get; set; }
+        public ICollection<OrderItem> orderItems { get; set; }
     }
 }
