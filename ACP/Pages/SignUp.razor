@@ -1,7 +1,11 @@
 ﻿@page "/SignUp"
 @layout Empty
-<div class="w-full h-full flex">
+@using System.ComponentModel.DataAnnotations
+@inject AccountService service
+@inject NavigationManager Nav
 
+<div class="w-full h-full flex">
+    @* القسم الأيسر - الصورة والترحيب *@
     <div class="hidden lg:flex w-5/12 relative bg-slate-900 flex-col justify-between overflow-hidden">
         <div class="absolute inset-0 z-0">
             <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&auto=format&fit=crop&w=1927&q=80"
@@ -35,12 +39,10 @@
         </div>
     </div>
 
+    @* القسم الأيمن - الفورم *@
     <div class="w-full lg:w-7/12 overflow-y-auto bg-white relative">
-
         <div class="flex flex-col items-center justify-start min-h-full px-4 sm:px-12 pt-0 pb-10">
-
             <div class="w-full max-w-[550px]">
-
                 <div class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm py-6 mb-4 border-b border-transparent transition-all">
                     <div class="flex items-center gap-2">
                         <span class="text-4xl font-extrabold tracking-tighter text-slate-900">Alef</span>
@@ -53,14 +55,28 @@
                     <p class="text-slate-500 text-base">Join the community and start caring smarter.</p>
                 </div>
 
-                <form class="space-y-5">
+                @* ربط الفورم بموديل SignUpVM المباشر *@
+                <EditForm Model="model" OnValidSubmit="HandleRegister" class="space-y-5">
+                    <DataAnnotationsValidator />
 
                     <div class="space-y-2">
                         <label class="text-sm font-bold text-slate-900 ml-1">Full Name</label>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <input type="text" placeholder="First" class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-600 outline-none font-medium transition-all">
-                            <input type="text" placeholder="Middle" class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-600 outline-none font-medium transition-all">
-                            <input type="text" placeholder="Family" class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-600 outline-none font-medium transition-all">
+                            <div>
+                                <InputText @bind-Value="model.FirstName"
+                                           onkeypress="return preventNonLetters(event)"
+                                           placeholder="First"
+                                           class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl ..." />           
+                                <ValidationMessage For="@(() => model.FirstName)" class="text-red-500 text-xs mt-1" />
+                            </div>
+                            <div>
+                                <InputText @bind-Value="model.MiddleName" onkeypress="return preventNonLetters(event)" placeholder="Middle" class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-600 outline-none font-medium transition-all" />
+                                <ValidationMessage For="@(() => model.MiddleName)" class="text-red-500 text-xs mt-1" />
+                            </div>
+                            <div>
+                                <InputText @bind-Value="model.LastName" onkeypress="return preventNonLetters(event)" placeholder="Family" class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-600 outline-none font-medium transition-all" />
+                                <ValidationMessage For="@(() => model.LastName)" class="text-red-500 text-xs mt-1" />
+                            </div>
                         </div>
                     </div>
 
@@ -68,48 +84,99 @@
                         <label class="text-sm font-bold text-slate-900 ml-1">Mobile Number</label>
                         <div class="flex gap-3">
                             <div class="relative w-1/3 sm:w-1/4">
-                                <select class="w-full h-full px-3 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold focus:ring-4 focus:ring-orange-100 focus:border-orange-600 outline-none appearance-none cursor-pointer">
+                                <select @bind="model.CountryCode" class="w-full h-full px-3 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold focus:ring-4 focus:ring-orange-100 focus:border-orange-600 outline-none appearance-none cursor-pointer">
                                     <option value="+966">🇸🇦 +966</option>
                                     <option value="+971">🇦🇪 +971</option>
                                     <option value="+20">🇪🇬 +20</option>
                                     <option value="+1">🇺🇸 +1</option>
                                 </select>
                             </div>
-                            <input type="tel" placeholder="5X XXX XXXX" class="w-full flex-1 px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-600 outline-none font-medium transition-all">
+                            <div class="flex-1">
+                                <InputText @bind-Value="model.PhoneNumber" onkeypress="return preventNonNumbers(event)" inputmode="numeric" type="tel" placeholder="5X XXX XXXX" class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-600 outline-none font-medium transition-all" />
+                                <ValidationMessage For="@(() => model.PhoneNumber)" class="text-red-500 text-xs mt-1" />
+                            </div>
                         </div>
                     </div>
 
                     <div class="space-y-2">
                         <label class="text-sm font-bold text-slate-900 ml-1">Email</label>
-                        <input type="email" placeholder="hello@alef.com" class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-600 outline-none font-medium transition-all">
+                        <div class="relative">
+                            <InputText @bind-Value="model.Email"
+                                       @onfocusout="CheckEmailExists"
+                                       type="email"
+                                       placeholder="hello@alef.com"
+                                       class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-600 outline-none font-medium transition-all" />
+
+                            @if (isCheckingEmail)
+                            {
+                                <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
+                                    <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-orange-600"></div>
+                                </div>
+                            }
+                        </div>
+                        <ValidationMessage For="@(() => model.Email)" class="text-red-500 text-xs mt-1" />
+
+                        @* رسالة التحقق من السيرفر (وجود الحساب) *@
+                        @if (!string.IsNullOrEmpty(emailServerErrorMessage))
+                        {
+                            <span class="text-red-600 text-xs font-bold mt-1 animate-pulse">
+                                @emailServerErrorMessage
+                            </span>
+                        }
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
                             <label class="text-sm font-bold text-slate-900 ml-1">Password</label>
-                            <input type="password" placeholder="••••••••" class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-600 outline-none font-medium transition-all">
+                            <div class="relative">
+                                <InputText @bind-Value="model.Password"
+                                           type="@(showPassword ? "text" : "password")"
+                                           placeholder="••••••••"
+                                           class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-600 outline-none font-medium transition-all" />
+
+                                @* زر إظهار/إخفاء كلمة السر *@
+                                <button type="button"
+                                        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-orange-600 transition-colors"
+                                        @onclick="() => showPassword = !showPassword">
+                                    @if (showPassword)
+                                    {
+                                        @* أيقونة العين المشطوبة (Hide) *@
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.822 7.822L21 21m-7.737-7.737a3 3 0 1 1-4.243-4.243m4.242 4.242L9.88 9.88" />
+                                        </svg>
+                                    }
+                                    else
+                                    {
+                                        @* أيقونة العين (Show) *@
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                        </svg>
+                                    }
+                                </button>
+                            </div>                            <ValidationMessage For="@(() => model.Password)" class="text-red-500 text-xs mt-1" />
                         </div>
                         <div class="space-y-2">
                             <label class="text-sm font-bold text-slate-900 ml-1">Confirm</label>
-                            <input type="password" placeholder="••••••••" class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-600 outline-none font-medium transition-all">
+                            <InputText @bind-Value="model.ConfirmPassword" type="password" placeholder="••••••••" class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-600 outline-none font-medium transition-all" />
+                            <ValidationMessage For="@(() => model.ConfirmPassword)" class="text-red-500 text-xs mt-1" />
                         </div>
                     </div>
 
                     <div class="flex items-center ml-1 mt-2">
-                        <input id="terms" type="checkbox" class="h-4 w-4 text-orange-600 border-slate-300 rounded focus:ring-orange-500 cursor-pointer">
+                        <input id="terms" type="checkbox" @bind="model.AcceptTerms" class="h-4 w-4 text-orange-600 border-slate-300 rounded focus:ring-orange-500 cursor-pointer">
                         <label for="terms" class="ml-2 text-sm font-medium text-slate-600">
                             I agree to the <a href="#" class="text-orange-600 hover:underline">Terms & Privacy</a>.
                         </label>
                     </div>
 
-                    <button class="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-2xl shadow-lg shadow-orange-200 transform hover:-translate-y-0.5 transition-all duration-200 text-lg">
+                    <button type="submit" class="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-2xl shadow-lg shadow-orange-200 transform hover:-translate-y-0.5 transition-all duration-200 text-lg">
                         Create Account
                     </button>
-
-                </form>
+                </EditForm>
 
                 <p class="mt-8 mb-4 text-center text-slate-500 font-medium">
-                    Already have an account? <a href="#" class="text-orange-600 font-bold hover:underline">Sign in</a>
+                    Already have an account? <a href="/login" class="text-orange-600 font-bold hover:underline">Sign in</a>
                 </p>
             </div>
         </div>
@@ -118,4 +185,141 @@
 
 @code {
 
+    private bool isCheckingEmail = false;
+    private string emailServerErrorMessage = "";
+
+    private async Task CheckEmailExists()
+    {
+        // 1. تصفير الرسائل السابقة
+        emailServerErrorMessage = "";
+
+        // 2. التحقق من صيغة الإيميل أولاً قبل إرهاق السيرفر بالطلبات
+        var emailAttribute = new EmailAddressAttribute();
+        if (string.IsNullOrEmpty(model.Email) || !emailAttribute.IsValid(model.Email))
+        {
+            return;
+        }
+
+        isCheckingEmail = true;
+
+        // 3. استدعاء السيرفر
+        // النتيجة true = متاح، false = مستخدم مسبقاً
+        var isAvailable = await service.CheckEmailAvailability(model.Email);
+
+        if (!isAvailable)
+        {
+            emailServerErrorMessage = "This email is already registered. Please use another or sign in.";
+        }
+
+        isCheckingEmail = false;
+    }
+
+
+    private bool showPassword = false;
+
+    // 1. تعريف الـ ViewModel المسطح لسهولة الفاليديشن
+    private SignUpVM model = new();
+    string generalErrorMessage = "";
+
+    private async Task HandleRegister()
+    {
+        // منع التسجيل إذا كانت هناك رسالة خطأ من السيرفر بخصوص الإيميل
+        if (!string.IsNullOrEmpty(emailServerErrorMessage) || isCheckingEmail)
+        {
+            return;
+        }
+
+        if (!model.AcceptTerms) return;
+
+        // 2. تحويل البيانات إلى كائن Register المتداخل الذي يتوقعه الـ Backend
+        var registerDto = new Register
+        {
+            Password = model.Password,
+            CustomerDetails = new Customer
+            {
+                FirstName = model.FirstName,
+                MiddleName = model.MiddleName,
+                LastName = model.LastName,
+                PhoneNumber = model.PhoneNumber,
+                Email = model.Email,
+                IsCompleteProfile = false
+            }
+        };
+
+        var result = await service.Register(registerDto);
+
+        if (result != null && string.IsNullOrEmpty(result.Message))
+        {
+            // نجاح التسجيل -> توجه لصفحة اللوق إن
+            Nav.NavigateTo("/login");
+        }
+        else if (result != null && !string.IsNullOrEmpty(result.Message))
+        {
+            // عرض رسالة الخطأ القادمة من السيرفر إذا فشل التسجيل
+            generalErrorMessage = result.Message;
+        }
+
+    }
+
+    // 3. كلاس الـ ViewModel (ضعه هنا أو في ملف مستقل)
+    public class SignUpVM
+    {
+        [Required(ErrorMessage = "First name is required")]
+        [RegularExpression(@"^[a-zA-Z\u0600-\u06FF\s]*$", ErrorMessage = "Letters only (English or Arabic)")]
+        public string FirstName{ get; set; }
+        [Required(ErrorMessage = "Meddle name is required")]
+        [RegularExpression(@"^[a-zA-Z\u0600-\u06FF\s]*$", ErrorMessage = "Letters only (English or Arabic)")]
+        public string MiddleName { get; set; } = "";
+
+        [Required(ErrorMessage = "Family name is required")]
+        [RegularExpression(@"^[a-zA-Z\u0600-\u06FF\s]*$", ErrorMessage = "Letters only (English or Arabic)")]
+        public string LastName { get; set; } = "";
+
+        [Required(ErrorMessage = "Phone number is required")]
+        [RegularExpression(@"^[0-9]*$", ErrorMessage = "Numbers only")]
+        [MinLength(9, ErrorMessage = "Too short")]
+        public string PhoneNumber { get; set; } = "";
+
+        public string CountryCode { get; set; } = "+966";
+
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email format")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "Password is required")]
+        [MinLength(8, ErrorMessage = "Minimum 8 characters")]
+        // التحقق من: حرف كبير، حرف صغير، رقم، ورمز خاص
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
+            ErrorMessage = "Password must have: Uppercase, Lowercase, Number, and Special Character (@$!%*?&).")]
+        public string Password { get; set; } = "";
+
+        [Required(ErrorMessage = "Please confirm your password")]
+        [Compare(nameof(Password), ErrorMessage = "Passwords do not match")]
+        public string ConfirmPassword { get; set; } = "";
+
+        public bool AcceptTerms { get; set; }
+    }
 }
+
+
+<script>
+    function preventNonLetters(event) {
+        // يسمح بالحروف (الإنجليزية والعربية) والمسافة فقط
+        var regex = new RegExp("^[a-zA-Z\\u0600-\\u06FF\\s]+$");
+        var key = String.fromCharCode(!event.charCode ? event.which : event.charCode);
+        if (!regex.test(key)) {
+            event.preventDefault();
+            return false;
+        }
+    }
+
+    function preventNonNumbers(event) {
+        // يسمح بالأرقام فقط
+        var regex = new RegExp("^[0-9]+$");
+        var key = String.fromCharCode(!event.charCode ? event.which : event.charCode);
+        if (!regex.test(key)) {
+            event.preventDefault();
+            return false;
+        }
+    }
+</script>
