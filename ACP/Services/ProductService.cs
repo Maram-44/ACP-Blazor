@@ -1,4 +1,5 @@
-﻿using ACP.Models.Products;
+﻿using ACP.Application.DTOs.Products;
+using ACP.Models.Products;
 using System.Net.Http.Json;
 
 namespace ACP.Services
@@ -31,6 +32,34 @@ namespace ACP.Services
             }
 
             throw new Exception("Error creating product");
+        }
+
+        // 1. إرسال تعليق جديد
+        public async Task<ProductComment> AddCommentAsync(ProductComment commentDto)
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/Products/comments", commentDto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<ProductComment>();
+            }
+
+            throw new Exception("فشل في إضافة التعليق");
+        }
+
+        // 2. جلب تعليقات منتج معين
+        public async Task<List<ProductComment>> GetProductCommentsAsync(int itemId)
+        {
+            // نستخدم المسار الجديد الذي حددناه في الكنترولر
+            var response = await _httpClient.GetFromJsonAsync<List<ProductComment>>($"api/Products/{itemId}/comments");
+            return response ?? new List<ProductComment>();
+        }
+
+        // 3. حذف تعليق
+        public async Task<bool> DeleteCommentAsync(int commentId, int customerId)
+        {
+            var response = await _httpClient.DeleteAsync($"api/Products/comments/{commentId}/{customerId}");
+            return response.IsSuccessStatusCode;
         }
     }
 }

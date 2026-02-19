@@ -14,5 +14,6 @@ namespace ACP.Application.DTOs.Products
         [MaxLength(200)]
         public string Comment { get; set; } = null!;
         public int CustomerId { get; set; }
+        public int ItemId { get; set; }
     }
 }
