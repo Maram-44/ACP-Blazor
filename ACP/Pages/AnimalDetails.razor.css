@@ -1,0 +1,71 @@
+﻿
+.animal-card {
+    background: linear-gradient(135deg, #EA580C 0%, #0F172A 100%);
+    border-radius: 1.5rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.image-counter {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    z-index: 10;
+}
+
+.nav-arrow-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: #1f2937;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+    .nav-arrow-btn:hover {
+        background-color: #EA580C !important;
+        color: white !important;
+        transform: scale(1.1);
+    }
+
+.adopt-btn {
+    background: #EA580C;
+    color: white;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
+    cursor: pointer;
+}
+
+    .adopt-btn:hover {
+        background: #000;
+        transform: translateY(-2px);
+    }
+
+.info-card {
+    background-color: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(234, 88, 12, 0.15);
+}
+
+.health-item-compact {
+    padding: 0.75rem;
+    margin-bottom: 0.6rem;
+    background-color: #F8FAFC;
+    border-radius: 0.75rem;
+    border-left: 4px solid #EA580C;
+}
+
+

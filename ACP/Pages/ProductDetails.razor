@@ -1,0 +1,174 @@
+﻿@page "/product-details/{ItemId:int}"
+@using ACP.Models.Products
+@using ACP.Services
+
+<main class="max-w-6xl mx-auto px-6 py-10 pt-32 antialiased select-none">
+    <div class="flex flex-col md:flex-row gap-12 items-start">
+
+        <div class="w-full md:w-1/2 flex flex-col items-center">
+            <div class="w-full max-w-md aspect-square relative rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm bg-gray-50 group">
+                <img src="@MainImageUrl" class="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-110">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none"></div>
+            </div>
+
+            <div class="flex items-center mt-8 gap-4">
+                <button @onclick="PrevImage" class="w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center bg-white hover:bg-orange-500 hover:text-white shadow-sm transition-all duration-300">
+                    <i class="fas fa-chevron-left text-xs"></i>
+                </button>
+
+                <div class="overflow-hidden w-[300px]">
+                    <div class="flex gap-3 overflow-x-auto no-scrollbar p-1">
+                        @if (item?.itemPhoto != null)
+                        {
+                            @foreach (var photo in item.itemPhoto)
+                            {
+                                <div @onclick="() => SetMainImage(photo.PhotoName)"
+                                     class="min-w-[65px] h-[65px] rounded-2xl border-2 bg-white cursor-pointer overflow-hidden transition-all duration-300
+                                                     @(photo.PhotoName == MainImageUrl ? "border-orange-500 scale-105 shadow-md" : "border-gray-50 opacity-60 hover:opacity-100")">
+                                    <img src="@photo.PhotoName" class="w-full h-full object-cover">
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <button @onclick="NextImage" class="w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center bg-white hover:bg-orange-500 hover:text-white shadow-sm transition-all duration-300">
+                    <i class="fas fa-chevron-right text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="w-full md:w-1/2 space-y-8">
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <span class="bg-orange-100 text-orange-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
+                        @(item?.Category?.CategoryName ?? "Loading...")
+                    </span>
+                    <span class="text-gray-400 text-[10px] font-bold uppercase tracking-[0.3em]">SKU: @item?.SKU</span>
+                </div>
+
+                <h1 class="text-5xl font-black text-gray-900 leading-tight uppercase italic tracking-tighter">@item?.ItemName</h1>
+
+                <div class="flex items-center gap-4">
+                    <div class="flex text-orange-500 text-sm gap-0.5">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <i class="@(i <= (int)(item?.AverageRating ?? 0) ? "fas" : "far") fa-star"></i>
+                        }
+                    </div>
+                    <span class="text-[11px] font-black text-gray-400 uppercase tracking-widest">(@item?.AverageRating.ToString("F1") / 5)</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6 py-8 border-y border-gray-100">
+                <div class="flex flex-col">
+                    <span class="text-5xl font-black text-orange-500 tracking-tighter">$@item?.SellPrice</span>
+                </div>
+
+                @if (item?.DiscountRate > 0)
+                {
+                    <div class="flex flex-col">
+                        <span class="text-xl text-gray-300 line-through font-bold leading-none">$@OriginalPrice.ToString("N2")</span>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="bg-black text-white px-2 py-0.5 rounded text-[9px] font-black tracking-widest uppercase italic">Save @(item.DiscountRate * 100)%</span>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] italic">Description</h3>
+                <p class="text-gray-600 text-lg leading-relaxed italic border-l-4 border-orange-200 pl-6 py-1">
+                    @item?.Description
+                </p>
+            </div>
+
+            <div class="pt-4">
+                <button class="w-full bg-orange-500 text-white py-6 rounded-[2rem] flex items-center justify-center gap-4 transition-all duration-300 shadow-2xl shadow-orange-200 hover:shadow-orange-300 hover:-translate-y-1 active:scale-95 font-black uppercase italic group">
+                    <i class="fas fa-shopping-basket group-hover:animate-bounce"></i>
+                    Add to Cart
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <section class="mt-32">
+        <div class="flex flex-col md:flex-row items-center gap-16 bg-gray-50/50 p-12 rounded-[3rem] mb-16 border border-gray-100/50">
+            <div class="text-center md:border-r md:pr-16 border-gray-200/50">
+                <h2 class="text-8xl font-black text-gray-900 tracking-tighter italic">@item?.AverageRating.ToString("F1")</h2>
+                <div class="flex justify-center text-orange-500 my-4 text-xl gap-1">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <i class="@(i <= (int)(item?.AverageRating ?? 0) ? "fas" : "far") fa-star"></i>
+                    }
+                </div>
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">Based on @item?.TotalReviews Reviews</p>
+            </div>
+
+            <div class="flex-grow space-y-5 w-full">
+                @foreach (var stat in StarStats)
+                {
+                    <div class="flex items-center gap-6">
+                        <span class="text-[11px] font-black w-4 text-gray-400">@stat.StarLevel</span>
+                        <div class="flex-grow h-2.5 bg-white rounded-full overflow-hidden shadow-inner border border-gray-100">
+                            <div class="h-full bg-orange-500 rounded-full transition-all duration-1000" style="width: @stat.Percentage%"></div>
+                        </div>
+                        <span class="text-[11px] text-gray-400 font-black w-10">@stat.Percentage%</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between mb-12 px-4">
+            <h3 class="text-3xl font-black text-gray-900 uppercase italic tracking-tight">Experience Wall</h3>
+
+            <button @onclick="OpenModal" class="bg-orange-500 text-white px-10 py-5 rounded-full text-[11px] font-black uppercase tracking-widest shadow-xl shadow-orange-100 hover:shadow-orange-200 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-3">
+                <i class="fas fa-plus text-[10px]"></i> Add Experience
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            @if (item?.ProductComments != null)
+            {
+                @foreach (var comment in item.ProductComments)
+                {
+                    <div class="bg-white p-10 rounded-[2.5rem] shadow-sm border border-orange-50 relative group transition-all duration-300 hover:border-orange-200 hover:shadow-xl hover:shadow-orange-50/50 hover:-translate-y-1">
+                        @if (comment.CustomerId == CurrentCustomerId && comment.Id != null)
+                        {
+                            <div class="absolute top-10 right-10">
+                                <button @onclick="() => ToggleMenu(comment.Id.Value)" @onclick:stopPropagation="true" class="text-gray-300 hover:text-orange-500 transition-colors">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                @if (OpenMenuId == comment.Id)
+                                {
+                                    <div class="absolute right-0 mt-3 w-36 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 py-2 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                                        <button @onclick="() => HandleDelete(comment.Id.Value)" class="w-full text-left px-5 py-3 text-[10px] font-bold text-red-500 hover:bg-red-50 uppercase flex items-center gap-2">
+                                            <i class="fas fa-trash-alt text-[10px]"></i> Delete
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <div class="flex items-center gap-5 mb-8">
+                            <div class="w-14 h-14 @(comment.CustomerId == CurrentCustomerId ? "bg-black text-white" : "bg-orange-100 text-orange-600") rounded-full flex items-center justify-center font-black italic text-sm uppercase tracking-tighter transition-transform group-hover:scale-110">
+                                @(comment.CustomerId == CurrentCustomerId ? "ME" : GetInitials(comment.Customer))
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 italic text-base">@(comment.CustomerId == CurrentCustomerId ? "You" : GetFullName(comment.Customer))</h4>
+                                <div class="flex text-orange-400 text-[10px] gap-1 mt-1.5">
+                                    @for (int i = 0; i < 5; i++)
+                                    {
+                                        <i class="@(i < comment.Rating ? "fas" : "far") fa-star"></i>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-gray-500 italic leading-relaxed text-lg">"@comment.Comment"</p>
+                        <div class="mt-6 text-[9px] font-bold text-gray-300 uppercase tracking-widest">@comment.CreatedAt.ToString("MMMM dd, yyyy")</div>
+                    </div>
+                }
+            }
+        </div>
+    </section>
+</main>

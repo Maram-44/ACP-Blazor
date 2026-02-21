@@ -1,4 +1,6 @@
 ﻿
+using ACP.Application.DTOs.Products;
+
 namespace ACP.Models.Products
 {
     public class Item
@@ -16,9 +18,14 @@ namespace ACP.Models.Products
 
 
         public int CategoryId { get; set; }
+        public ItemsCategory Category { get; set; }=null!;
         public int? OwnerId { get; set; }
 
+        public double AverageRating { get; set; }
+        public int TotalReviews { get; set; }
+
         public ICollection<ItemPhoto> itemPhoto { get; set; }
+        public ICollection<ProductComment> ProductComments { get; set; } = new List<ProductComment>();
 
     }
 }
