@@ -20,21 +20,56 @@ public partial class Cart
         await LoadCartData();
     }
 
+    //private async Task LoadCartData()
+    //{
+    //    try
+    //    {
+    //        var result = await BasketService.GetCustomerBasketAsync(currentCustomerId);
+    //        if (result != null)
+    //        {
+    //            CartItems = result;
+    //            CalculateSummary();
+    //        }
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        Console.WriteLine($"Error fetching cart: {ex.Message}");
+    //        CartItems = new List<ItemsBasket>();
+    //    }
+    //}
+
     private async Task LoadCartData()
     {
         try
         {
+            // حاول تجلب من السيرفر أولاً
             var result = await BasketService.GetCustomerBasketAsync(currentCustomerId);
-            if (result != null)
+
+            if (result != null && result.Any())
             {
                 CartItems = result;
-                CalculateSummary();
             }
+            else
+            {
+                // إذا الداتا فاضية، نحط داتا تجريبية عشان نشوف الشغل
+                CartItems = new List<ItemsBasket>
+            {
+                new ItemsBasket { ItemId = 101, QTY = 2, CustomerId = 1 },
+                new ItemsBasket { ItemId = 105, QTY = 1, CustomerId = 1 },
+                new ItemsBasket { ItemId = 110, QTY = 3, CustomerId = 1 }
+            };
+            }
+            CalculateSummary();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error fetching cart: {ex.Message}");
-            CartItems = new List<ItemsBasket>();
+            Console.WriteLine($"Error: {ex.Message}");
+            // حتى لو فيه ايرور، اعرض داتا وهمية عشان تشيك التصميم
+            CartItems = new List<ItemsBasket>
+        {
+            new ItemsBasket { ItemId = 99, QTY = 1, CustomerId = 1 }
+        };
+            CalculateSummary();
         }
     }
 
