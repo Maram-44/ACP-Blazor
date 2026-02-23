@@ -1,103 +1,220 @@
-﻿@page "/animal-profile/{AnimalId:int}"
-@using ACP.Models.Animals
-@namespace ACP.Pages
+﻿@page "/animal-details/{AnimalId:int}"
 
- 
+<style>
+    /* خلفية دافئة وحيوية */
+    body {
+        background-color: #fffaf5;
+        background-image: radial-gradient(circle at 0% 0%, rgba(249, 115, 22, 0.08) 0%, transparent 40%), radial-gradient(circle at 100% 100%, rgba(249, 115, 22, 0.05) 0%, transparent 40%);
+        background-attachment: fixed;
+    }
 
-<main class="container mx-auto px-4 py-8 mt-24 text-left" dir="ltr">
+    /* تعديل ألوان الكاردات لتطابق كارد الوصف */
+    .vibrant-card {
+        background: linear-gradient(135deg, #ffffff 0%, #ffffff 70%, #fff7ed 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 237, 213, 0.8);
+        border-radius: 2.5rem;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+        .vibrant-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px -15px rgba(234, 88, 12, 0.15);
+        }
+
+    /* تأثيرات الزر */
+    .btn-adopt {
+        transition: all 0.3s ease;
+    }
+
+        .btn-adopt:active {
+            transform: scale(0.95);
+        }
+</style>
+
+<main class="container mx-auto px-6 py-12 mt-20 text-left" dir="ltr">
     @if (isLoading)
     {
         <div class="flex flex-col items-center justify-center py-40">
-            <div class="w-16 h-16 border-4 border-[#EA580C] border-t-transparent rounded-full animate-spin"></div>
-            <p class="mt-6 text-[#64748B] font-bold">Loading Details...</p>
+            <div class="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin"></div>
+            <p class="mt-6 text-orange-600 font-bold animate-pulse tracking-widest">LOADING DATA...</p>
         </div>
     }
     else if (AnimalItem == null)
     {
-        <div class="max-w-2xl mx-auto p-12 bg-white rounded-[2rem] border-2 border-dashed border-slate-200 text-center shadow-sm">
-            <i class="fas fa-search text-slate-300 text-4xl mb-6"></i>
-            <h2 class="text-2xl font-black text-slate-800">Animal Not Found</h2>
-            <a href="/browse-animals" class="adopt-btn inline-block mt-8 px-10 py-4 rounded-2xl no-underline">Back to Browse</a>
+        <div class="text-center p-20 vibrant-card max-w-2xl mx-auto border-dashed">
+            <i class="fas fa-search text-5xl text-orange-200 mb-6 block"></i>
+            <h2 class="text-2xl font-bold text-slate-800">Animal not found!</h2>
         </div>
     }
     else
     {
-        <div class="flex flex-col lg:flex-row gap-10">
-          
-            <div class="lg:w-2/5">
-                <div class="animal-card relative">
-                    <div class="relative h-[320px]">
-                        @if (AnimalItem.animalImages != null && AnimalItem.animalImages.Any())
-                        {
-                            <div class="image-counter">@(currentImageIndex + 1) / @AnimalItem.animalImages.Count</div>
-                        }
-                        <img src="@(AnimalItem.animalImages?.ElementAtOrDefault(currentImageIndex)?.Image ?? "https://via.placeholder.com/400")" class="w-full h-full object-cover" />
-                        <div class="absolute inset-0 flex items-center justify-between px-4">
-                            <button @onclick="PrevImg" class="nav-arrow-btn"><i class="fas fa-chevron-left"></i></button>
-                            <button @onclick="NextImg" class="nav-arrow-btn"><i class="fas fa-chevron-right"></i></button>
-                        </div>
-                    </div>
-                    <div class="p-6 bg-white/5 backdrop-blur-sm text-white text-center">
-                        <div class="grid grid-cols-3 gap-2">
-                            <div><div class="text-lg font-bold">@AnimalItem.Gender</div><div class="text-[10px] uppercase opacity-60">Gender</div></div>
-                            <div class="border-x border-white/20"><div class="text-lg font-bold">Local</div><div class="text-[10px] uppercase opacity-60">Breed</div></div>
-                            <div><div class="text-lg font-bold">Cat</div><div class="text-[10px] uppercase opacity-60">Type</div></div>
+        @* إضافة items-stretch لضمان تناسق الطول بصرياً *@
+        <div class="flex flex-col lg:flex-row gap-12 mb-10 items-stretch">
+            @* الجانب الأيسر: الصورة والبيانات الأساسية *@
+            <div class="lg:w-2/5 group flex flex-col">
+                <div class="relative rounded-[3rem] overflow-hidden bg-slate-900 border-4 border-white shadow-xl flex-grow">
+                    <img src="@(AnimalItem.animalImages?.FirstOrDefault()?.Image ?? "https://via.placeholder.com/400")"
+                         class="w-full h-[500px] object-cover transition-transform duration-1000 group-hover:scale-110" />
+
+                    @* شريط البيانات السريع على الصورة *@
+                    <div class="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div>
+                                <p class="text-xl font-black uppercase">@AnimalItem.Gender</p>
+                                <p class="text-[9px] tracking-widest opacity-60">GENDER</p>
+                            </div>
+                            <div class="border-x border-white/20">
+                                <p class="text-xl font-black text-orange-400 uppercase">@breedName</p>
+                                <p class="text-[9px] tracking-widest opacity-60">BREED</p>
+                            </div>
+                            <div>
+                                <p class="text-xl font-black uppercase">@typeName</p>
+                                <p class="text-[9px] tracking-widest opacity-60">TYPE</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <button @onclick="HandleAdoptionClick" class="adopt-btn w-full mt-8 py-5 rounded-3xl flex items-center justify-center text-xl uppercase tracking-widest">
-                    <i class="fas fa-heart mr-3"></i> Adopt This Animal
+
+                <button class="btn-adopt w-full mt-8 bg-orange-600 hover:bg-orange-700 text-white font-black py-6 rounded-[2rem] flex items-center justify-center gap-3 shadow-lg shadow-orange-600/20">
+                    <i class="fas fa-heart group-hover:animate-ping"></i>
+                    <span>ADOPT @AnimalItem.Name.ToUpper()</span>
                 </button>
             </div>
 
-         
-            <div class="lg:w-3/5 space-y-8">
-                <h1 class="text-3xl font-black text-[#0F172A]">Animal Details</h1>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="info-card p-8">
-                        <h3 class="font-bold text-gray-800 mb-6 flex items-center"><i class="fas fa-paw mr-3 text-[#EA580C]"></i> Information</h3>
+            @* الجانب الأيمن: تفاصيل البيانات الكاملة *@
+            <div class="lg:w-3/5 flex flex-col justify-between space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    @* بطاقة المعلومات الأساسية *@
+                    <div class="vibrant-card p-8 shadow-sm">
+                        <h3 class="text-lg font-black text-slate-800 mb-6 flex items-center gap-3">
+                            <i class="fas fa-info-circle text-orange-500"></i> Basic Info
+                        </h3>
                         <div class="space-y-4 text-sm">
-                            <div class="flex justify-between border-b pb-2"><span>Name</span><span class="font-bold">@AnimalItem.Name</span></div>
-                            <div class="flex justify-between"><span>Status</span><span class="font-bold text-[#EA580C]">@AnimalItem.Status</span></div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-400">Full Name</span>
+                                <span class="font-bold text-slate-800">@AnimalItem.Name</span>
+                            </div>
+                            <div class="flex justify-between items-center border-t border-orange-100/30 pt-4">
+                                <span class="text-slate-400">Primary Color</span>
+                                <span class="font-bold text-slate-800">@AnimalItem.Color</span>
+                            </div>
+                            <div class="flex justify-between items-center border-t border-orange-100/30 pt-4">
+                                <span class="text-slate-400">Age</span>
+                                <span class="font-black text-orange-600">
+                                    @{
+                                        var currentAge = DateTime.Now.Year - AnimalItem.BirthDate.Year;
+                                        if (AnimalItem.BirthDate.Date > DateTime.Now.AddYears(-currentAge)) currentAge--;
+                                        <span>@(currentAge <= 0 ? "Less than a year" : $"{currentAge} Year(s)")</span>
+                                    }
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center border-t border-orange-100/30 pt-4">
+                                <span class="text-slate-400">Status</span>
+                                @{
+                                    string sText; string sClass;
+                                    switch (AnimalItem.Status)
+                                    {
+                                        case "1": sText = "Available"; sClass = "text-green-600"; break;
+                                        case "0": sText = "Adopted"; sClass = "text-red-500"; break;
+                                        default: sText = "Pending"; sClass = "text-orange-500"; break;
+                                    }
+                                }
+                                <span class="font-black uppercase text-xs @sClass">@sText</span>
+                            </div>
                         </div>
                     </div>
 
-                  
-                    <div class="info-card p-8 md:col-span-2">
-                        <h3 class="font-bold text-gray-800 mb-6 flex items-center"><i class="fas fa-heartbeat mr-3 text-[#EA580C]"></i> Health</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
-                            <div>
-                                <h4 class="font-bold text-gray-400 mb-3 uppercase">Vaccinations</h4>
-                                @foreach (var v in AnimalItem.AnimalVaccination ?? new List<AnimalVaccination>())
-                                {
-                                    <div class="health-item-compact flex justify-between">
-                                        <span>@v.Vaccination</span><i class="fas fa-check-circle text-green-500"></i>
-                                    </div>
-                                }
+                    @* بطاقة الموقع والطبيعة *@
+                    <div class="vibrant-card p-8 shadow-sm">
+                        <h3 class="text-lg font-black text-slate-800 mb-6 flex items-center gap-3">
+                            <i class="fas fa-map-marked-alt text-slate-600"></i> Location
+                        </h3>
+                        <div class="space-y-4 text-sm">
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-400">Country</span>
+                                <span class="font-bold text-slate-800">@AnimalItem.Country</span>
                             </div>
-                            <div>
-                                <h4 class="font-bold text-gray-400 mb-3 uppercase">Operations</h4>
-                                @foreach (var s in AnimalItem.animalSurgicalOperations ?? new List<AnimalSurgicalOperation>())
-                                {
-                                    <div class="health-item-compact" style="border-left-color: #10b981;">
-                                        <div class="flex justify-between items-start">
-                                            <div>
-                                                <div class="font-bold">@s.SurgicalOperation</div>
-                                                @if (s.Date.HasValue)
-                                                {
-                                                    <div class="text-[10px] text-gray-400 mt-1">
-                                                        <i class="far fa-clock"></i> @s.Date.Value.ToString("MMM dd, yyyy - hh:mm tt")
-                                                    </div>
-                                                }
-                                            </div>
-                                            <span class="text-[10px] text-green-600 font-bold px-1 bg-green-50 rounded">@s.OperationStatus</span>
-                                        </div>
-                                    </div>
-                                }
+                            <div class="flex justify-between items-center border-t border-orange-100/30 pt-4">
+                                <span class="text-slate-400">City</span>
+                                <span class="font-bold text-slate-800">@AnimalItem.City</span>
+                            </div>
+                            <div class="flex justify-between items-center border-t border-orange-100/30 pt-4">
+                                <span class="text-slate-400">Is Pet</span>
+                                <span class="font-bold text-slate-800">@(AnimalItem.IsPet ? "Yes" : "No")</span>
+                            </div>
+                            <div class="flex justify-between items-center border-t border-orange-100/30 pt-4">
+                                <span class="text-slate-400">Is Tame</span>
+                                <span class="font-bold text-slate-800">@(AnimalItem.IsAnimalTame ? "Yes" : "No")</span>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                @* بطاقة السجل الصحي *@
+                <div class="vibrant-card p-10 flex-grow shadow-sm">
+                    <h3 class="text-xl font-black text-slate-800 mb-8 flex items-center gap-3">
+                        <i class="fas fa-notes-medical text-orange-600"></i> Health & Medical
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        @* التطعيمات *@
+                        <div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Vaccinations</p>
+                            @if (AnimalItem.AnimalVaccination?.Any() == true)
+                            {
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach (var vac in AnimalItem.AnimalVaccination)
+                                    {
+                                        <span class="px-3 py-1 bg-white text-orange-700 rounded-lg text-[11px] font-bold border border-orange-100 shadow-sm">@vac.Vaccination</span>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-xs text-slate-300 italic">No records.</p>
+                            }
+                        </div>
+                        @* العمليات *@
+                        <div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Surgical Operations</p>
+                            @if (AnimalItem.animalSurgicalOperations?.Any() == true)
+                            {
+                                <div class="space-y-3">
+                                    @foreach (var op in AnimalItem.animalSurgicalOperations)
+                                    {
+                                        <div class="p-3 bg-white/60 rounded-2xl border border-orange-50 shadow-sm">
+                                            <div class="flex justify-between items-center mb-1">
+                                                <span class="font-bold text-slate-800 text-[12px]">@op.SurgicalOperation</span>
+                                                <span class="text-[9px] text-slate-400">@(op.Date?.ToString("yyyy-MM-dd") ?? "No Date")</span>
+                                            </div>
+                                            <p class="text-[10px] font-black uppercase @(op.OperationStatus == "Success" ? "text-green-600" : "text-orange-500")">@op.OperationStatus</p>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-xs text-slate-300 italic">No records.</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* قسم الوصف كامل العرض *@
+        <div class="w-full mb-20 group">
+            <div class="vibrant-card p-12 relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 text-orange-500/5 text-[15rem] transform rotate-12 transition-transform duration-1000 group-hover:rotate-0">
+                    <i class="fas fa-paw"></i>
+                </div>
+                <h3 class="text-2xl font-black text-slate-800 mb-6 flex items-center gap-3">
+                    <i class="fas fa-quote-left text-orange-500 animate-pulse"></i> Full Description
+                </h3>
+                <p class="text-slate-500 leading-relaxed font-medium italic text-xl max-w-5xl relative z-10">
+                    "@(string.IsNullOrEmpty(AnimalItem.Description) ? "No description available for this animal yet." : AnimalItem.Description)"
+                </p>
             </div>
         </div>
     }
