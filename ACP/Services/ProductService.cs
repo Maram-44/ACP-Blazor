@@ -48,6 +48,11 @@ namespace ACP.Services
             return response.IsSuccessStatusCode;
         }
 
+        public async Task<Item?>GetProductByIdAsync(int itemId)
+        {
+            return await _httpClient.GetFromJsonAsync<Item>($"api/Products/{itemId}");
+        }
+
         // 1. إرسال تعليق جديد
         public async Task<ProductComment> AddCommentAsync(ProductComment commentDto)
         {
