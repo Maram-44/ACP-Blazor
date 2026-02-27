@@ -48,7 +48,7 @@ namespace ACP.Services
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<Item?>GetProductByIdAsync(int itemId)
+        public async Task<Item?>GetProductByItemIdAsync(int itemId)
         {
             return await _httpClient.GetFromJsonAsync<Item>($"api/Products/{itemId}");
         }
