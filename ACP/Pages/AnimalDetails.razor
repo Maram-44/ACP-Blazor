@@ -52,13 +52,40 @@
         @* إضافة items-stretch لضمان تناسق الطول بصرياً *@
         <div class="flex flex-col lg:flex-row gap-12 mb-10 items-stretch">
             @* الجانب الأيسر: الصورة والبيانات الأساسية *@
-            <div class="lg:w-2/5 group flex flex-col">
+            <div class="lg:w-2/5 group flex flex-col relative">
                 <div class="relative rounded-[3rem] overflow-hidden bg-slate-900 border-4 border-white shadow-xl flex-grow">
-                    <img src="@(AnimalItem.animalImages?.FirstOrDefault()?.Image ?? "https://via.placeholder.com/400")"
-                         class="w-full h-[500px] object-cover transition-transform duration-1000 group-hover:scale-110" />
 
-                    @* شريط البيانات السريع على الصورة *@
-                    <div class="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
+                    @* تعديل عرض الصور واستخدام نظام الـ Index والأسهم *@
+                    @if (AnimalItem.animalImages != null && AnimalItem.animalImages.Any())
+                    {
+                        @* تم استخدام ElementAt لحل مشكلة الـ ICollection *@
+                        <img src="@(AnimalItem.animalImages.ElementAt(currentImageIndex).Image)"
+                             class="w-full h-[500px] object-cover transition-transform duration-1000 group-hover:scale-110" />
+
+                        @* أزرار التنقل بين الصور *@
+                        @if (AnimalItem.animalImages.Count > 1)
+                        {
+                            <button type="button" @onclick="PrevImg" class="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-orange-600 p-4 rounded-full text-white transition-all shadow-lg border border-white/10">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+
+                            <button type="button" @onclick="NextImg" class="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-orange-600 p-4 rounded-full text-white transition-all shadow-lg border border-white/10">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+
+                            @* عداد الصور الصغير في الأعلى *@
+                            <div class="absolute top-6 right-6 z-20 bg-orange-600/90 backdrop-blur-md px-4 py-1.5 rounded-full text-[11px] text-white font-black tracking-widest shadow-lg">
+                                <i class="fas fa-images mr-1"></i> @(currentImageIndex + 1) / @AnimalItem.animalImages.Count
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <img src="e.png" class="w-full h-[500px] object-cover" />
+                    }
+
+                    @* شريط البيانات السريع على الصورة - تم تصحيح الكلاس bg-gradient-to-t *@
+                    <div class="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/90 via-black/40 to-transparent text-white z-10">
                         <div class="grid grid-cols-3 gap-4 text-center">
                             <div>
                                 <p class="text-xl font-black uppercase">@AnimalItem.Gender</p>
@@ -76,12 +103,12 @@
                     </div>
                 </div>
 
-                <button class="btn-adopt w-full mt-8 bg-orange-600 hover:bg-orange-700 text-white font-black py-6 rounded-[2rem] flex items-center justify-center gap-3 shadow-lg shadow-orange-600/20">
+                @* ربط الزر بحدث HandleAdoptionClick وتعديل النص للـ Upper *@
+                <button type="button" @onclick="HandleAdoptionClick" class="btn-adopt w-full mt-8 bg-orange-600 hover:bg-orange-700 text-white font-black py-6 rounded-[2rem] flex items-center justify-center gap-3 shadow-lg shadow-orange-600/20">
                     <i class="fas fa-heart group-hover:animate-ping"></i>
-                    <span>ADOPT @AnimalItem.Name.ToUpper()</span>
+                    <span>ADOPT @(AnimalItem.Name?.ToUpper() ?? "PET")</span>
                 </button>
             </div>
-
             @* الجانب الأيمن: تفاصيل البيانات الكاملة *@
             <div class="lg:w-3/5 flex flex-col justify-between space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -113,12 +140,30 @@
                             <div class="flex justify-between items-center border-t border-orange-100/30 pt-4">
                                 <span class="text-slate-400">Status</span>
                                 @{
-                                    string sText; string sClass;
-                                    switch (AnimalItem.Status)
+                                    string sText = "No Data"; // نص أولي للكشف فقط
+                                    string sClass = "text-slate-400";
+
+                                    if (AnimalItem != null && AnimalItem.Status != null)
                                     {
-                                        case "1": sText = "Available"; sClass = "text-green-600"; break;
-                                        case "0": sText = "Adopted"; sClass = "text-red-500"; break;
-                                        default: sText = "Pending"; sClass = "text-orange-500"; break;
+                                        // محاولة التحويل لرقم
+                                        bool isNumber = int.TryParse(AnimalItem.Status.ToString(), out int statusValue);
+
+                                        if (isNumber)
+                                        {
+                                            switch (statusValue)
+                                            {
+                                                case 1: sText = "AvailableForAdoption"; sClass = "text-green-600"; break;
+                                                case 2: sText = "FosterCare"; sClass = "text-blue-500"; break;
+                                                case 3: sText = "Adopted"; sClass = "text-red-500"; break;
+                                                case 4: sText = "UnAvailableForAdoption"; sClass = "text-orange-500"; break;
+                                                default: sText = "Status Number: " + statusValue; sClass = "text-purple-600"; break;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            // إذا كانت الحالة نصية وليست رقماً
+                                            sText = " " + AnimalItem.Status.ToString();
+                                        }
                                     }
                                 }
                                 <span class="font-black uppercase text-xs @sClass">@sText</span>

@@ -2,15 +2,17 @@
 using ACP.Models.MedicalCenters;
 using ACP.Services;
 
+
+
 namespace ACP.Pages
 {
-    public class ClinicDetailsBase : ComponentBase
+    public partial class ClinicDetailsBase : ComponentBase
     {
         [Inject] public ACP.Services.MedicalCenterService MedicalService { get; set; } = default!;
         [Inject] public NavigationManager Navigation { get; set; } = default!;
 
        
-        [Parameter][SupplyParameterFromQuery] public int Id { get; set; }
+        [Parameter] public int Id { get; set; }
 
         protected int currentImageIndex = 0;
         protected MedicalCenter? currentCenter;

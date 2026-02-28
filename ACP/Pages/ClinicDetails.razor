@@ -1,241 +1,238 @@
-﻿@page "/clinic-details"
-@using ACP.Models.MedicalCenters
+﻿@page "/clinic-details/{Id:int}"
 @inherits ClinicDetailsBase
 
 <style>
     .animal-app {
         font-family: 'Plus Jakarta Sans', sans-serif;
-        color: #1E293B;
+        background-color: #fffaf5;
+        min-height: 100vh;
+        background-image: radial-gradient(#ea580c05 1px, transparent 1px);
+        background-size: 20px 20px;
     }
 
-    /* لودر التحميل */
-    .loader-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 60vh;
+    .content-container {
+        padding-top: 130px;
     }
 
-    .spinner {
-        width: 50px;
-        height: 50px;
-        border: 5px solid #FFF3E0;
-        border-top: 5px solid #EA580C;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    @@keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
-    }
-
-    /* الصور */
-    .img-wrapper {
-        background: #F8FAFC;
-        border-radius: 2.5rem;
-        overflow: hidden;
-        position: relative;
-        height: 400px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.05);
-    }
-
-    .main-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: 0.5s ease;
-    }
-
-    .nav-arrow {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 45px;
-        height: 45px;
-        background: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        z-index: 10;
-        cursor: pointer;
-    }
-
-    /* الكروت */
-    .action-btn {
-        background: #EA580C;
-        color: white;
-        font-weight: 800;
-        padding: 0.8rem 2.5rem;
-        border-radius: 1.2rem;
-        box-shadow: 0 8px 20px rgba(234, 88, 12, 0.2);
-        transition: 0.3s;
-    }
-
-    .info-card {
-        background: white;
-        border-radius: 2rem;
-        padding: 2.5rem;
-        border: 1px solid #FFEDD5;
-        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.02);
-    }
-
-    /* الخدمات */
-    .services-container-card {
-        background: white;
-        border-radius: 2rem;
-        padding: 2.5rem;
-        border: none;
-    }
-
-    .service-item-card {
-        background: white;
-        border: 1px solid #FFEDD5;
-        border-radius: 1.2rem;
+    .info-tile {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(234, 88, 12, 0.1);
+        border-radius: 1.5rem;
         padding: 1.25rem;
         display: flex;
-        align-items: center;
-        gap: 1rem;
-        transition: 0.3s;
+        flex-direction: column;
+        gap: 0.5rem;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-        .service-item-card:hover {
+        .info-tile:hover {
+            transform: translateY(-5px);
+            background: white;
             border-color: #EA580C;
-            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(234, 88, 12, 0.1);
         }
 
-    .status-badge {
+    .services-magic-card {
+        background: white;
+        border-radius: 3rem;
+        border: 1px solid #fff1e2;
+        padding: 3rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.03);
+    }
+
+    .magic-bg-icon {
         position: absolute;
-        top: 1.5rem;
-        right: 1.5rem;
-        z-index: 20;
-        padding: 0.6rem 1.2rem;
-        border-radius: 2rem;
-        font-size: 11px;
+        right: -2%;
+        bottom: -10%;
+        font-size: 18rem;
+        color: rgba(234, 88, 12, 0.03);
+        transform: rotate(-15deg);
+        pointer-events: none;
+        transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .services-magic-card:hover .magic-bg-icon {
+        transform: rotate(0deg) scale(1.1);
+        color: rgba(234, 88, 12, 0.07);
+    }
+
+    .service-tag {
+        background: white;
+        border: 1px solid #fff1e2;
+        padding: 1rem 1.5rem;
+        border-radius: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.3s;
+        cursor: default;
+        position: relative;
+        z-index: 10;
+    }
+
+        .service-tag:hover {
+            background: #EA580C;
+            color: white !important;
+            transform: scale(1.05);
+        }
+
+    .img-main-wrapper {
+        border-radius: 3rem;
+        overflow: hidden;
+        border: 6px solid white;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.1);
+        height: 480px;
+    }
+
+    .clinic-main-title {
+        font-size: 2.8rem;
         font-weight: 900;
+        color: #0F172A;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
     }
 </style>
 
-<div class="animal-app bg-[#FBFCFE] min-h-screen pt-24 pb-12">
-    <div class="container mx-auto px-6 lg:px-20">
-
+<div class="animal-app pb-20">
+    <div class="container mx-auto px-6 lg:px-20 content-container">
         @if (isLoading)
         {
-            <div class="loader-container">
-                <div class="spinner mb-4"></div>
-                <h2 class="text-slate-400 font-bold animate-pulse">تحميل تفاصيل العيادة...</h2>
-            </div>
-            <p class="text-slate-400 font-medium mb-10 leading-relaxed">
-                We couldn't retrieve the details for this center.
-                The link might be broken or the clinic is temporarily unavailable.
-            </p>
-        }
-        else if (currentCenter == null)
-        {
-            <div class="flex flex-col items-center justify-center min-h-[65vh] py-12 text-center">
-
-                <div class="max-w-2xl w-full mx-auto p-12 bg-white rounded-[2rem] border-2 border-dashed border-slate-200 shadow-sm">
-
-                    <i class="fas fa-search text-slate-300 text-5xl mb-6"></i>
-
-                   
-                    <h2 class="text-2xl font-black text-slate-800 mb-4">Clinic Not Found</h2>
-
-                   
-                    <p class="text-slate-400 font-medium mb-2">We couldn't retrieve the details for this center.</p>
-                    <p class="text-slate-300 text-sm mb-10">The link might be broken or the clinic is unavailable.</p>
-
-                 
-                    <button @onclick='() => Navigation.NavigateTo("medical-centers")'
-                            class="inline-flex items-center justify-center px-10 py-4 rounded-2xl text-white font-bold tracking-wide shadow-lg transition-all cursor-pointer border-none"
-                            style="background-color: #EA580C !important; color: white !important;">
-                        <i class="fas fa-arrow-left mr-2"></i> Back to Browse
-                    </button>
-
-                </div>
+            <div class="flex flex-col items-center justify-center py-40">
+                <div class="w-12 h-12 border-4 border-orange-100 border-t-orange-600 rounded-full animate-spin"></div>
+                <p class="mt-4 text-orange-600 font-bold animate-pulse">Loading Clinic Details...</p>
             </div>
         }
-        else
+        else if (currentCenter != null)
         {
-            <div class="flex flex-col lg:flex-row gap-12">
-                <div class="lg:w-2/5">
-                    <div class="img-wrapper">
-                        <div class="status-badge @(currentCenter.IsDirectBooking ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700")">
-                            @(currentCenter.IsDirectBooking ? "DIRECT BOOKING" : "UNDIRECT BOOKING")
-                        </div>
+            <div class="flex flex-col lg:flex-row gap-16 items-start mb-16">
 
-                        @if (currentCenter.medicalCenterServices != null && currentCenter.medicalCenterServices.Any())
+                @* اليسار: الصور والحالة *@
+                <div class="lg:w-2/5 w-full space-y-8">
+                    <div class="img-main-wrapper relative group">
+                        @if (currentCenter.medicalCenterServices?.Any() == true)
                         {
-                            <button @onclick="PrevImage" class="nav-arrow left-4"><i class="fas fa-chevron-left"></i></button>
-                            <button @onclick="NextImage" class="nav-arrow right-4"><i class="fas fa-chevron-right"></i></button>
-
-                            var currentService = currentCenter.medicalCenterServices.ElementAt(currentImageIndex);
-                            <img src="@currentService.Image" class="main-img" />
+                            <img src="/@currentCenter.medicalCenterServices.ElementAt(currentImageIndex).Image" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
                         }
+
+                        @* كارد الحالة: يظهر دائماً ويقرأ من IsDirectBooking *@
+                        <div class="absolute top-6 right-6 backdrop-blur-md px-5 py-2 rounded-2xl font-black text-[9px] tracking-[0.2em] shadow-lg transition-all duration-500
+                                         @(currentCenter.IsDirectBooking ? "bg-emerald-500/90 text-white border border-emerald-400" : "bg-slate-800/80 text-slate-200 border border-slate-700")">
+                            <i class="fas @(currentCenter.IsDirectBooking ? "fa-bolt" : "fa-clock") mr-1"></i>
+                            @(currentCenter.IsDirectBooking ? "DIRECT BOOKING" : "INDIRECT BOOKING")
+                        </div>
+                    </div>
+
+                    @* التحكم بالصور *@
+                    <div class="flex items-center justify-center gap-4">
+                        <button type="button" @onclick="PrevImage" class="w-12 h-12 rounded-full bg-white shadow-sm border border-orange-50 text-orange-600 hover:bg-orange-600 hover:text-white transition-all">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <div class="flex gap-3">
+                            @foreach (var (s, index) in currentCenter.medicalCenterServices.Select((v, i) => (v, i)))
+                            {
+                                <div @onclick="() => currentImageIndex = index" class="w-14 h-14 rounded-2xl overflow-hidden cursor-pointer border-2 transition-all @(currentImageIndex == index ? "border-orange-500 scale-110 shadow-lg" : "border-transparent opacity-40 hover:opacity-100")">
+                                    <img src="/@s.Image" class="w-full h-full object-cover" />
+                                </div>
+                            }
+                        </div>
+                        <button type="button" @onclick="NextImage" class="w-12 h-12 rounded-full bg-white shadow-sm border border-orange-50 text-orange-600 hover:bg-orange-600 hover:text-white transition-all">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
                 </div>
 
-                <div class="lg:w-3/5">
-                    <div class="flex justify-between items-start mb-10">
-                        <h1 class="text-4xl font-black text-slate-900">@currentCenter.Name</h1>
+                @* اليمين: البيانات *@
+                <div class="lg:w-3/5 w-full">
+                    <div class="mb-10">
+                        <span class="text-orange-600 font-black text-[10px] tracking-[0.3em] uppercase mb-3 block">Medical Center Profile</span>
+                        <h1 class="clinic-main-title uppercase mb-6">@currentCenter.Name</h1>
+
+                        @* الزر يظهر فقط إذا كان الحجز مباشراً *@
                         @if (currentCenter.IsDirectBooking)
                         {
-                            <button class="action-btn">Booking Now</button>
+                            <button class="bg-[#EA580C] text-white font-black px-10 py-4 rounded-2xl shadow-xl shadow-orange-600/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
+                                <i class="fas fa-calendar-check"></i> BOOKING NOW
+                            </button>
                         }
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="info-card border-l-4 border-l-[#EA580C]">
-                            <h3 class="font-black text-slate-800 mb-8 flex items-center gap-2">
-                                <i class="fas fa-id-card text-[#EA580C]"></i> Contact Info
-                            </h3>
-                            <div class="space-y-5">
-                                <div class="flex justify-between"><span class="text-slate-400 font-bold text-[10px] uppercase">Name</span><span class="text-slate-700 font-extrabold text-sm text-right">@currentCenter.Name</span></div>
-                                <div class="flex justify-between"><span class="text-slate-400 font-bold text-[10px] uppercase">Phone</span><span class="text-slate-700 font-extrabold text-sm text-right">@currentCenter.Phone</span></div>
-                                <div class="flex justify-between"><span class="text-slate-400 font-bold text-[10px] uppercase">Email</span><span class="text-[#EA580C] font-extrabold text-[11px] text-right">@currentCenter.Email</span></div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div class="info-tile">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 bg-orange-50 rounded-lg flex items-center justify-center text-orange-600"><i class="fas fa-id-badge"></i></div>
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Official Name</span>
                             </div>
+                            <div class="text-[1rem] font-extrabold text-slate-800">@currentCenter.Name</div>
                         </div>
 
-                        <div class="info-card border-l-4 border-l-slate-800">
-                            <h3 class="font-black text-slate-800 mb-8 flex items-center gap-2">
-                                <i class="fas fa-map-marked-alt text-[#EA580C]"></i> Location
-                            </h3>
-                            <div class="space-y-5">
-                                <div class="flex justify-between"><span class="text-slate-400 font-bold text-[10px] uppercase">Country</span><span class="text-slate-700 font-extrabold text-sm text-right">@currentCenter.Country</span></div>
-                                <div class="flex justify-between"><span class="text-slate-400 font-bold text-[10px] uppercase">City</span><span class="text-slate-700 font-extrabold text-sm text-right">@currentCenter.City</span></div>
-                                <div class="flex justify-between"><span class="text-slate-400 font-bold text-[10px] uppercase">Street</span><span class="text-slate-700 font-extrabold text-sm text-right text-xs">@currentCenter.Street</span></div>
+                        <div class="info-tile">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 bg-orange-50 rounded-lg flex items-center justify-center text-orange-600"><i class="fas fa-phone-alt"></i></div>
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Support Line</span>
                             </div>
+                            <div class="text-[1rem] font-extrabold text-slate-800">@currentCenter.Phone</div>
+                        </div>
+
+                        <div class="info-tile">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 bg-orange-50 rounded-lg flex items-center justify-center text-orange-600"><i class="fas fa-envelope-open-text"></i></div>
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Email Inquiry</span>
+                            </div>
+                            <div class="text-[0.95rem] font-extrabold text-orange-600 break-all">@currentCenter.Email</div>
+                        </div>
+
+                        <div class="info-tile">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 bg-orange-50 rounded-lg flex items-center justify-center text-orange-600"><i class="fas fa-map-marker-alt"></i></div>
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">City & Country</span>
+                            </div>
+                            <div class="text-[1rem] font-extrabold text-slate-800">@currentCenter.City, @currentCenter.Country</div>
+                        </div>
+
+                        <div class="info-tile sm:col-span-2">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 bg-orange-50 rounded-lg flex items-center justify-center text-orange-600"><i class="fas fa-directions"></i></div>
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Full Address</span>
+                            </div>
+                            <div class="text-[1rem] font-extrabold text-slate-800">@currentCenter.Street</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-12">
-                <div class="services-container-card">
-                    <h2 class="text-2xl font-black text-slate-900 mb-10 border-l-8 border-[#EA580C] pl-4">Our Services</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            @* كارد الخدمات *@
+            <div class="services-magic-card">
+                <i class="fas fa-paw magic-bg-icon"></i>
+                <div class="relative z-10">
+                    <div class="flex items-center gap-4 mb-10">
+                        <div class="w-12 h-2 bg-orange-600 rounded-full"></div>
+                        <h2 class="text-3xl font-black text-slate-900 tracking-tight">Our Services</h2>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         @if (currentCenter.medicalCenterServices != null)
                         {
                             @foreach (var s in currentCenter.medicalCenterServices)
                             {
-                                <div class="service-item-card shadow-sm group">
-                                    <div class="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center text-[#EA580C] group-hover:bg-[#EA580C] group-hover:text-white transition-all">
-                                        <i class="fas fa-check-circle"></i>
+                                <div class="service-tag group">
+                                    <div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+                                        <i class="fas fa-check text-[10px]"></i>
                                     </div>
-                                    <span class="font-bold text-slate-700 text-sm">@s.ServiceName</span>
+                                    <span class="font-bold text-slate-700 text-xs uppercase tracking-wide">@s.ServiceName</span>
                                 </div>
                             }
                         }
                     </div>
                 </div>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-20">
+                <h2 class="text-2xl font-bold text-slate-800">Clinic information could not be found.</h2>
+                <button @onclick='() => Navigation.NavigateTo("medical-centers")' class="mt-4 bg-orange-600 text-white px-6 py-2 rounded-xl">Back to Centers</button>
             </div>
         }
     </div>
