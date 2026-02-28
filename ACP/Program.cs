@@ -1,9 +1,11 @@
 using ACP;
 using ACP.Services;
 using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.AspNetCore.SignalR.Client;
 
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -49,6 +51,16 @@ builder.Services.AddHttpClient<ProductService>((sp, client) =>
     client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
 });
 
+builder.Services.AddHttpClient<SubscriptionService>((sp, client) =>
+{
+    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
+});
+
+builder.Services.AddHttpClient<NotificationClientService>((sp, client) =>
+{
+    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
+});
+
 builder.Services.AddAuthorizationCore();
 
 //builder.Services.AddAuthorizationCore(options =>
@@ -57,6 +69,16 @@ builder.Services.AddAuthorizationCore();
 //    options.AddPolicy("CompletedProfileOnly", policy =>
 //        policy.RequireClaim("IsProfileCompleted", "true"));
 //});
+
+// ÅÚÏÇÏ ÇÊÕÇá SignalR
+builder.Services.AddScoped(sp =>
+{
+    var navManager = sp.GetRequiredService<NavigationManager>();
+    return new HubConnectionBuilder()
+        .WithUrl(navManager.ToAbsoluteUri("/notificationHub"))
+        .WithAutomaticReconnect()
+        .Build();
+});
 
 
 builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();

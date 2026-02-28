@@ -1,5 +1,6 @@
-﻿using System.Net.Http.Json;
-using ACP.Models.Animals;
+﻿using ACP.Models.Animals;
+using System.Net.Http;
+using System.Net.Http.Json;
 
 namespace ACP.Services
 {
@@ -60,6 +61,23 @@ namespace ACP.Services
         {
             return await _http.GetFromJsonAsync<List<AnimalType>>("api/animals/animal-types")
                    ?? new List<AnimalType>();
+        }
+
+        public async Task<List<Animal>> GetCustomerAnimalsAsync(int customerId)
+        {
+            try
+            {
+                // نرسل الطلب إلى المسار الذي حددناه في الـ API
+                var response = await _http.GetFromJsonAsync<List<Animal>>($"api/Animals/my-animals/{customerId}");
+
+                return response ?? new List<Animal>();
+            }
+            catch (Exception ex)
+            {
+                // معالجة الأخطاء في حال فشل الاتصال
+                Console.WriteLine($"Error fetching animals: {ex.Message}");
+                return new List<Animal>();
+            }
         }
     }
 }

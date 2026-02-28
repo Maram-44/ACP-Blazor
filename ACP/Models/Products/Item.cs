@@ -18,14 +18,14 @@ namespace ACP.Models.Products
 
 
         public int CategoryId { get; set; }
-        public ItemsCategory Category { get; set; }=null!;
+        public string? CategoryName { get; set; }
+
         public int? OwnerId { get; set; }
 
         public double AverageRating { get; set; }
         public int TotalReviews { get; set; }
 
         public ICollection<ItemPhoto> itemPhoto { get; set; }
-        public ICollection<ProductComment> ProductComments { get; set; } = new List<ProductComment>();
 
     }
 }

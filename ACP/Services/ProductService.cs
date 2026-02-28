@@ -34,7 +34,21 @@ namespace ACP.Services
             throw new Exception("Error creating product");
         }
 
-        public async Task<Item?>GetProductByIdAsync(int itemId)
+        // تحديث منتج
+        public async Task<bool> UpdateProductAsync(Item itemDto)
+        {
+            var response = await _httpClient.PutAsJsonAsync("api/Products", itemDto);
+            return response.IsSuccessStatusCode;
+        }
+
+        // حذف منتج
+        public async Task<bool> DeleteProductAsync(int id)
+        {
+            var response = await _httpClient.DeleteAsync($"api/Products/{id}");
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<Item?>GetProductByItemIdAsync(int itemId)
         {
             return await _httpClient.GetFromJsonAsync<Item>($"api/Products/{itemId}");
         }
@@ -65,6 +79,37 @@ namespace ACP.Services
         {
             var response = await _httpClient.DeleteAsync($"api/Products/comments/{commentId}/{customerId}");
             return response.IsSuccessStatusCode;
+        }
+
+        public async Task<List<Item>> GetProductsByOwnerAsync(int ownerId)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<List<Item>>($"api/Products/owner/{ownerId}");
+                return response ?? new List<Item>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"خطأ في جلب المنتجات: {ex.Message}");
+                return new List<Item>();
+            }
+        }
+
+        public async Task<List<Item>> GetRandomProductsAsync(int count)
+        {
+            return await _httpClient.GetFromJsonAsync<List<Item>>($"api/Products/random/{count}")
+                   ?? new List<Item>();
+        }
+
+        public async Task<List<Item>> GetProductsByCategoryAsync(int categoryId)
+        {
+            return await _httpClient.GetFromJsonAsync<List<Item>>($"api/Products/category/{categoryId}")
+                   ?? new List<Item>();
+        }
+
+        public async Task<List<ItemsCategory>> GetItemsCategoriesAsync()
+        {
+            return await _httpClient.GetFromJsonAsync<List<ItemsCategory>>("api/categories")??new List<ItemsCategory>();
         }
     }
 }
