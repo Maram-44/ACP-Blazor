@@ -1,4 +1,5 @@
 using ACP;
+using ACP.Models.Customers;
 using ACP.Services;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
@@ -57,6 +58,11 @@ builder.Services.AddHttpClient<SubscriptionService>((sp, client) =>
 });
 
 builder.Services.AddHttpClient<NotificationClientService>((sp, client) =>
+{
+    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
+});
+
+builder.Services.AddHttpClient<CustomerProfile>((sp, client) =>
 {
     client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
 });

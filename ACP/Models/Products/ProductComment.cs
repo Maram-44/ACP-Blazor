@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ACP.Models;
+using ACP.Models.Customers;
 
 namespace ACP.Application.DTOs.Products
 {
