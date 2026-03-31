@@ -1,0 +1,93 @@
+﻿.input {
+    width: 100%;
+    padding: 14px;
+    border-radius: 18px;
+    border: 1px solid #d1d5db;
+    background: white;
+    transition: 0.2s;
+    font-size: 15px;
+}
+
+    .input::placeholder {
+        color: #9ca3af;
+    }
+
+    .input:focus {
+        outline: none;
+        border-color: #fb923c;
+        box-shadow: 0 0 0 2px rgba(251,146,60,0.2);
+    }
+
+/* Yes / No buttons */
+.choice-btn {
+    padding: 10px 22px;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    background: white;
+    cursor: pointer;
+    transition: 0.2s;
+    font-weight: 500;
+}
+
+    .choice-btn:hover {
+        border-color: #fb923c;
+    }
+
+    .choice-btn.active {
+        background: #f97316;
+        color: white;
+        border-color: #f97316;
+    }
+
+/* Submit */
+.submit-btn {
+    background: #ea580c;
+    color: white;
+    padding: 16px 60px;
+    border-radius: 999px;
+    font-weight: bold;
+    font-size: 18px;
+    transition: 0.2s;
+}
+
+    .submit-btn:hover {
+        background: #c2410c;
+    }
+
+    .submit-btn:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+    }
+
+/* Animations */
+.animate-fadeIn {
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-popup {
+    animation: popup 0.3s ease;
+}
+
+@keyframes popup {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

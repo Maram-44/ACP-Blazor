@@ -1,0 +1,238 @@
+﻿@namespace ACP.Forms
+@using ACP.Models.Animals
+@inject NavigationManager Nav
+
+<EditForm Model="animal" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="max-w-5xl mx-auto space-y-10 p-6 animate-fadeIn">
+
+        <!-- Title -->
+        <div class="text-center space-y-3">
+            <h2 class="text-4xl font-bold">
+                @(Mode == AnimalRequestMode.Abandonment
+                    ? "Abandonment Request"
+                    : "Foster Care Request")
+            </h2>
+
+            <p class="text-gray-500">
+                Fill in the details below
+                <span class="block text-sm text-orange-500">
+                    (Make sure your profile is completed first)
+                </span>
+            </p>
+        </div>
+
+        <!-- CARD -->
+        <div class="bg-[#f3f4f6] rounded-3xl p-8 border border-gray-200 space-y-10 shadow-sm">
+
+            <!-- Animal Info -->
+            <section class="space-y-6">
+
+                <h3 class="text-2xl font-semibold">🐾 Animal Information</h3>
+
+                <div class="grid md:grid-cols-2 gap-6">
+
+                    <InputText @bind-Value="animal.Name" placeholder="Name" class="input" />
+                    <InputText @bind-Value="animal.Color" placeholder="Color" class="input" />
+
+                    <InputSelect @bind-Value="animal.Gender" class="input">
+                        <option value="" disabled selected hidden>Gender</option>
+                        <option>Male</option>
+                        <option>Female</option>
+                    </InputSelect>
+
+                    <!-- Age -->
+                    <InputNumber @bind-Value="age" class="input" placeholder="Age (years)" Min="1" />
+
+                    <InputText @bind-Value="animal.Nationality" placeholder="Nationality" class="input" />
+                    <InputText @bind-Value="animal.PassportNumber" placeholder="Passport" class="input" />
+
+                    <InputNumber @bind-Value="animal.animalTypeId" class="input" placeholder="Animal Type" />
+                    <InputNumber @bind-Value="animal.BreedId" class="input" placeholder="Breed" />
+
+                    <InputText @bind-Value="animal.City" placeholder="City" class="input" />
+                    <InputText @bind-Value="animal.Country" placeholder="Country" class="input" />
+
+                </div>
+
+                <!-- Description -->
+                <textarea @bind="animal.Description"
+                          placeholder="Description"
+                          class="input w-full min-h-[120px] mt-4"></textarea>
+
+                <!-- Image -->
+                <div class="space-y-2">
+                    <label class="text-sm text-gray-600">Upload Animal Image</label>
+                    <InputFile OnChange="HandleImage" class="input" />
+                </div>
+
+            </section>
+
+            <!-- Health -->
+            <section class="space-y-6 pt-4">
+
+                <h3 class="text-2xl font-semibold">🩺 Health Information</h3>
+
+                <!-- Vaccination -->
+                <div class="space-y-3">
+                    <label>Is the animal vaccinated?</label>
+
+                    <div class="flex gap-4">
+                        <button type="button"
+                                class="choice-btn @(isVaccinated == true ? "active" : "")"
+                                @onclick="() => isVaccinated = true">
+                            Yes
+                        </button>
+
+                        <button type="button"
+                                class="choice-btn @(isVaccinated == false ? "active" : "")"
+                                @onclick="() => isVaccinated = false">
+                            No
+                        </button>
+                    </div>
+
+                    @if (isVaccinated == true)
+                    {
+                        <textarea @bind="vaccinationDetails"
+                                  class="input w-full min-h-[100px]"
+                                  placeholder="Enter vaccinations"></textarea>
+                    }
+                </div>
+
+                <!-- Surgery -->
+                <div class="space-y-3">
+                    <label>Any surgical operations?</label>
+
+                    <div class="flex gap-4">
+                        <button type="button"
+                                class="choice-btn @(hasSurgery == true ? "active" : "")"
+                                @onclick="() => hasSurgery = true">
+                            Yes
+                        </button>
+
+                        <button type="button"
+                                class="choice-btn @(hasSurgery == false ? "active" : "")"
+                                @onclick="() => hasSurgery = false">
+                            No
+                        </button>
+                    </div>
+
+                    @if (hasSurgery == true)
+                    {
+                        <textarea @bind="surgeryDetails"
+                                  class="input w-full min-h-[100px]"
+                                  placeholder="Enter surgeries"></textarea>
+                    }
+                </div>
+
+            </section>
+
+        </div>
+
+        <!-- Submit -->
+        <div class="flex justify-center pt-6">
+            <button type="submit"
+                    disabled="@(!IsFormValid())"
+                    class="submit-btn">
+                Submit Request
+            </button>
+        </div>
+
+        <!-- Popup -->
+        @if (showPopup)
+        {
+            <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+                <div class="bg-white rounded-3xl shadow-xl max-w-md w-full p-8 relative text-center animate-popup">
+
+                    <!-- زر الإغلاق -->
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
+                            @onclick="GoHome">
+                        ✕
+                    </button>
+
+                    <!-- أيقونة -->
+                    <div class="text-6xl text-orange-500 mb-4 animate-star">
+                        ⭐
+                    </div>
+
+                    <!-- العنوان -->
+                    <h3 class="text-xl font-bold mb-2">
+                        Foster Care Request Submitted Successfully
+                    </h3>
+
+                    <!-- النص -->
+                    <p class="text-sm text-gray-500 mb-6">
+                        You will be contacted via email soon.
+                    </p>
+
+                    <!-- الزر -->
+                    <button class="w-full bg-orange-600 text-white py-3 rounded-xl font-semibold hover:bg-orange-700 transition"
+                            @onclick="GoHome">
+                        Back To Home
+                    </button>
+
+                </div>
+            </div>
+        }
+
+    </div>
+</EditForm>
+
+@code {
+
+    private Animal animal = new();
+
+    private int? age;
+
+    private bool? isVaccinated;
+    private string? vaccinationDetails;
+
+    private bool? hasSurgery;
+    private string? surgeryDetails;
+
+    private bool showPopup = false;
+    private void GoHome()
+    {
+        Nav.NavigateTo("/");
+    }
+
+    [Parameter]
+    public AnimalRequestMode Mode { get; set; }
+
+    private void HandleSubmit()
+    {
+        if (Mode == AnimalRequestMode.Abandonment)
+            Nav.NavigateTo("/confirm-abandonment");
+        else
+            showPopup = true;
+    }
+
+    private void HandleImage(InputFileChangeEventArgs e) { }
+
+    private bool IsFormValid()
+    {
+        if (string.IsNullOrWhiteSpace(animal.Name) ||
+            string.IsNullOrWhiteSpace(animal.Color) ||
+            string.IsNullOrWhiteSpace(animal.Gender) ||
+            string.IsNullOrWhiteSpace(animal.City) ||
+            string.IsNullOrWhiteSpace(animal.Country) ||
+            age == null)
+            return false;
+
+        if (isVaccinated == true && string.IsNullOrWhiteSpace(vaccinationDetails))
+            return false;
+
+        if (hasSurgery == true && string.IsNullOrWhiteSpace(surgeryDetails))
+            return false;
+
+        return true;
+    }
+
+    public enum AnimalRequestMode
+    {
+        Abandonment,
+        FosterCare
+    }
+}
