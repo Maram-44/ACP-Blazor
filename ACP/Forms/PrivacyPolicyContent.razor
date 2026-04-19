@@ -1,0 +1,84 @@
+﻿@page "/privacy-policy"
+@inject NavigationManager Nav
+
+<div class="max-w-4xl mx-auto p-6 space-y-8 animate-fadeIn">
+
+    <!-- Title -->
+    <div class="text-center space-y-2">
+        <h1 class="text-4xl font-bold">Privacy Policy & Terms</h1>
+
+        <p class="text-gray-500">
+            Please read carefully before continuing
+        </p>
+    </div>
+
+    <!-- CARD -->
+    <div class="bg-[#f3f4f6] border border-gray-200 rounded-3xl p-6 shadow-sm space-y-6">
+
+        <!-- Scroll Content -->
+        <div class="policy-box">
+
+            <h2>1. Introduction</h2>
+            <p>
+                By using our platform, you agree to follow all rules and policies stated below.
+            </p>
+
+            <h2>2. User Responsibility</h2>
+            <p>
+                You are responsible for providing accurate information when submitting requests.
+            </p>
+
+            <h2>3. Animal Welfare</h2>
+            <p>
+                All users must ensure the safety and proper care of animals at all times.
+            </p>
+
+            <h2>4. Privacy</h2>
+            <p>
+                Your personal information will be securely stored and never shared without consent.
+            </p>
+
+            <h2>5. Platform Rights</h2>
+            <p>
+                The platform reserves the right to reject or review any request.
+            </p>
+
+            <h2>6. Agreement</h2>
+            <p>
+                By accepting, you confirm that you have read and understood all terms.
+            </p>
+
+        </div>
+
+        <!-- Agree -->
+        <div class="flex items-center gap-3 pt-2">
+            <input type="checkbox" @bind="isChecked" class="w-5 h-5" />
+
+            <span class="text-sm">
+                I have read and agree to the terms & privacy policy
+            </span>
+        </div>
+
+    </div>
+
+    <!-- Button -->
+    <div class="flex justify-center">
+        <button class="submit-btn"
+                disabled="@(!isChecked)"
+                @onclick="Continue">
+
+            Continue
+
+        </button>
+    </div>
+
+</div>
+
+@code {
+    private bool isChecked = false;
+
+    private void Continue()
+    {
+        Nav.NavigateTo("/");
+    }
+}
