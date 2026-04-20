@@ -1,5 +1,5 @@
 ﻿.policy-box {
-    max-height: 300px;
+    max-height: 320px;
     overflow-y: auto;
     padding-right: 10px;
 }
@@ -7,16 +7,15 @@
     .policy-box h2 {
         font-weight: 600;
         margin-top: 20px;
-        margin-bottom: 5px;
+        margin-bottom: 6px;
     }
 
     .policy-box p {
         color: #4b5563;
         font-size: 14px;
-        line-height: 1.6;
+        line-height: 1.7;
     }
 
-    /* Scroll شكل حلو */
     .policy-box::-webkit-scrollbar {
         width: 6px;
     }
