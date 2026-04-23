@@ -36,36 +36,33 @@
                 </div>
             </div>
         </div>
+     <div class="lg:w-2/3">
+        <div class="bg-white p-5 rounded-[4rem] shadow-sm border border-slate-50 min-h-[600px]">
 
-        <div class="lg:w-2/3">
-            <div class="bg-white p-5 rounded-[4rem] shadow-sm border border-slate-50 min-h-[600px]">
+            @* التبويبات *@
+            <div class="flex p-2 bg-slate-100/50 rounded-[2.5rem] mb-10">
+                <button @onclick='() => ChangeTab("Adoption")' class="flex-1 py-4 px-6 rounded-[2rem] text-xs font-black transition-all @(selectedTab == "Adoption" ? "bg-white shadow-sm text-orange-600" : "text-slate-500")">ADOPTION</button>
+                <button @onclick='() => ChangeTab("Foster")' class="flex-1 py-4 px-6 rounded-[2rem] text-xs font-black transition-all @(selectedTab == "Foster" ? "bg-white shadow-sm text-blue-600" : "text-slate-500")">FOSTER</button>
+                <button @onclick='() => ChangeTab("AllAnimals")' class="flex-1 py-4 px-6 rounded-[2rem] text-xs font-black transition-all @(selectedTab == "AllAnimals" ? "bg-white shadow-sm text-slate-900" : "text-slate-500")">ALL ANIMALS</button>
+            </div>
 
-                <div class="flex p-2 bg-slate-100/50 rounded-[2.5rem] mb-10">
-                    <button @onclick='() => ChangeTab("MyAnimals")' class="flex-1 py-4 px-6 rounded-[2rem] text-xs font-black transition-all @(selectedTab == "MyAnimals" ? "bg-white shadow-sm text-slate-900" : "text-slate-500")">My Animals</button>
-                    <button @onclick='() => ChangeTab("CareHistory")' class="flex-1 py-4 px-6 rounded-[2rem] text-xs font-black transition-all @(selectedTab == "CareHistory" ? "bg-white shadow-sm text-slate-900" : "text-slate-500")">Care History</button>
-                    <button @onclick='() => ChangeTab("Relinquished")' class="flex-1 py-4 px-6 rounded-[2rem] text-xs font-black transition-all @(selectedTab == "Relinquished" ? "bg-white shadow-sm text-slate-900" : "text-slate-500")">Relinquished</button>
-                </div>
-
-                <div class="space-y-6 px-2">
+            <div class="space-y-6 px-2">
                     @{
                         var filtered = GetFilteredAnimals();
                     }
-
-                    @if (!filtered.Any())
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
                     {
-                        <div class="flex flex-col items-center justify-center p-20 text-center animate-in fade-in duration-700">
-                            <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
-                                <svg class="w-12 h-12 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </div>
-                            <h3 class="text-xl font-bold text-slate-800 mb-2">No Animals Found</h3>
-                            <p class="text-slate-400 text-sm max-w-xs">It looks like this list is currently empty for your account.</p>
+                        <div class="p-10 text-center bg-slate-50 rounded-[3rem] border border-dashed border-slate-200">
+                            <p class="text-slate-400 font-bold">@ErrorMessage</p>
                         </div>
                     }
                     else
                     {
                         @foreach (var animal in filtered)
                         {
-                            <div class="flex flex-col md:flex-row items-center p-6 bg-white rounded-[2.5rem] border border-slate-100 hover:border-orange-200 transition-all mb-4 group">
+                            <div class="flex flex-col md:flex-row items-center p-6 bg-white rounded-[2.5rem] border border-slate-100 hover:border-orange-200 transition-all mb-4 group shadow-sm">
+
+                                @* صورة الحيوان *@
                                 <div class="relative">
                                     @{
                                         var firstImg = animal.animalImages?.FirstOrDefault()?.Image ?? "https://via.placeholder.com/300";
@@ -73,6 +70,7 @@
                                     <img src="@firstImg" class="w-32 h-32 rounded-[2rem] object-cover border-4 border-white shadow-xl">
                                 </div>
 
+                                @* معلومات الحيوان *@
                                 <div class="flex-1 md:px-8 text-left">
                                     <div class="flex items-center gap-2 mb-2">
                                         <h3 class="text-xl font-black text-slate-800">@animal.Name</h3>
@@ -81,19 +79,35 @@
                                         </span>
                                     </div>
                                     <p class="text-sm text-slate-400">Date of Birth: @animal.BirthDate.ToShortDateString()</p>
-
-                                    @if (animal.CustomerID != null && selectedTab == "MyAnimals")
-                                    {
-                                        <button class="mt-4 px-6 py-2 bg-slate-50 text-orange-600 border border-orange-100 rounded-xl text-[10px] font-black hover:bg-orange-600 hover:text-white transition-all">
-                                            TRACK SAFETY STATUS
-                                        </button>
-                                    }
                                 </div>
+
+                               
+                                @if (selectedTab == "Foster")
+                                {
+                                    <div class="mt-4 md:mt-0 flex flex-col items-end gap-2 border-l border-slate-100 pl-6">
+                                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Handover Code</span>
+
+                                        <div class="flex gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-200 shadow-inner">
+                                            <input type="text"
+                                                   placeholder="Enter Code"
+                                                   class="bg-transparent w-28 px-2 py-1 text-sm font-bold text-slate-700 outline-none text-center"
+                                                   maxlength="6" />
+
+                                            <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-[10px] font-black shadow-lg">
+                                                SUBMIT
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
                             </div>
                         }
                     }
+             
+
+               
                 </div>
-            </div>
+             </div>
+
         </div>
     </div>
 </main>

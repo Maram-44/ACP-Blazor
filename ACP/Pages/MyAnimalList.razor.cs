@@ -1,76 +1,95 @@
-﻿using ACP.Models.Animals;
+using ACP.Models.Animals;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System.Net.Http.Json;
 
 namespace ACP.Pages
 {
-    public partial class MyAnimalList
+    public partial class MyAnimalList : ComponentBase
     {
         [Inject] public HttpClient Http { get; set; } = default!;
         [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
-        private string selectedTab = "MyAnimals";
-        private int? currentCustomerId;
-        private List<Animal> AnimalsList = new(); // تبدأ فارغة تماماً
+        // جعلنا القيم محمية (protected) لضمان وصول ملف الـ Razor لها
+        protected string selectedTab = "AllAnimals";
+        protected int? currentCustomerId;
+        protected List<Animal> AnimalsList = new();
+        protected string ErrorMessage;
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
             {
-                // سحب الـ ID من Local Storage عند أول تحميل للصفحة
+           
                 var storedId = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "customerId");
 
                 if (!string.IsNullOrEmpty(storedId) && int.TryParse(storedId, out int id))
                 {
                     currentCustomerId = id;
-                    await LoadRealData();
-                    StateHasChanged(); // تحديث الواجهة بعد جلب البيانات
                 }
+
+                await LoadData();
+
+                // إجبار الصفحة على إعادة الرسم
+                StateHasChanged();
             }
         }
 
-        private async Task LoadRealData()
+        private async Task LoadData()
         {
             try
             {
-                // استدعاء السيرفر لجلب حيوانات هذا العميل فقط
-                // تأكدي أن الـ Endpoint في الـ API تطابق هذا المسار
-                var result = await Http.GetFromJsonAsync<List<Animal>>($"api/animals/customer/{currentCustomerId}");
-                if (result != null)
+                // محاولة جلب بيانات حقيقية إذا كان الـ ID موجود
+                if (currentCustomerId.HasValue)
                 {
-                    AnimalsList = result;
+                    var result = await Http.GetFromJsonAsync<List<Animal>>($"api/animals/customer/{currentCustomerId}");
+                    if (result != null && result.Any())
+                    {
+                        AnimalsList = result;
+                        return; // الخروج إذا نجح التحميل
+                    }
+                }
+                else
+                {
+                    // الحالة المطلوبة: إذا كان الـ API رد بنجاح لكن لا توجد بيانات (فاضي)
+                    AnimalsList = new List<Animal>();
+                    ErrorMessage = "No animals found in your account.";
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading animals: {ex.Message}");
-                AnimalsList = new List<Animal>();
+                Console.WriteLine($"API Error: {ex.Message}");
             }
+
         }
 
-        private void ChangeTab(string tabName) => selectedTab = tabName;
 
-        private IEnumerable<Animal> GetFilteredAnimals()
+        protected void ChangeTab(string tabName)
         {
-            if (AnimalsList == null) return Enumerable.Empty<Animal>();
-
-            // الفلترة الصارمة بناءً على التبويب والـ ID
-            return selectedTab switch
-            {
-                "MyAnimals" => AnimalsList.Where(a => a.Status != "Relinquished"),
-                "Relinquished" => AnimalsList.Where(a => a.Status == "Relinquished"),
-                "CareHistory" => AnimalsList.Where(a => a.animalSurgicalOperations?.Any() == true),
-                _ => Enumerable.Empty<Animal>()
-            };
+            selectedTab = tabName;
+            StateHasChanged();
         }
 
-        private string GetTagClass(string status) => status switch
+        protected IEnumerable<Animal> GetFilteredAnimals()
         {
-            "Healthy" => "bg-green-50 text-green-600 border border-green-100",
-            "Pending" => "bg-orange-100 text-orange-600 border border-orange-100",
-            "Relinquished" => "bg-slate-100 text-slate-600 border border-slate-200",
-            _ => "bg-gray-50 text-gray-600"
+            if (AnimalsList == null || !AnimalsList.Any()) return Enumerable.Empty<Animal>();
+
+            if (selectedTab == "AllAnimals") return AnimalsList;
+
+            if (selectedTab == "Adoption")
+                return AnimalsList.Where(a => a.Status == "AtHome" || a.Status == "Adoption");
+
+            if (selectedTab == "Foster")
+                return AnimalsList.Where(a => a.Status == "Foster" || a.Status == "Foster");
+
+            return AnimalsList;
+        }
+
+        protected string GetTagClass(string status) => status switch
+        {
+            "AtHome" => "bg-green-50 text-green-600 border border-green-100",
+            "Foster" => "bg-orange-100 text-orange-600 border border-orange-100",
+            _ => "bg-slate-50 text-slate-500 border border-slate-100"
         };
     }
 }
