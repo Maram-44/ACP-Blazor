@@ -1,0 +1,80 @@
+﻿@namespace ACP.Components.HomeComponents
+
+<section id="rehoming-section" class="py-24 bg-white">
+    <div class="container mx-auto px-8 md:px-16 lg:px-24">
+
+        @* كرت الإضافة الكبير بتصميم عصري *@
+        <div class="relative bg-orange-50 rounded-[4rem] p-12 md:p-20 overflow-hidden border-2 border-orange-100 shadow-[0_30px_60px_-15px_rgba(249,115,22,0.1)]">
+
+            @* ديكور خلفي (فقاعة نصية جمالية) *@
+            <div class="absolute -top-20 -right-20 w-80 h-80 bg-orange-200/30 rounded-full blur-3xl"></div>
+
+            <div class="flex flex-col lg:flex-row items-center gap-16 relative z-10">
+
+                @* الجانب النصي *@
+                <div class="lg:w-3/5 text-left">
+                    <div class="inline-flex items-center gap-2 bg-orange-500 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest mb-8">
+                        <span class="animate-pulse">●</span> Responsible Rehoming
+                    </div>
+
+                    <h2 class="text-5xl md:text-6xl font-[1000] text-slate-900 mb-6 tracking-tighter leading-[0.9]">
+                        Find Them a <br /> <span class="text-orange-500">Perfect New Start.</span>
+                    </h2>
+
+                    <p class="text-slate-600 text-xl font-medium leading-relaxed mb-10 max-w-xl">
+                        Sometimes life changes, and that's okay. We help you find a verified, loving family for your pet through a safe and documented process.
+                    </p>
+
+                    @* نقاط توضيحية للعملية *@
+                    <div class="flex flex-wrap gap-6 mb-12">
+                        <div class="flex items-center gap-2 text-slate-700 font-bold">
+                            <span class="text-orange-500">✓</span> Verified Parents
+                        </div>
+                        <div class="flex items-center gap-2 text-slate-700 font-bold">
+                            <span class="text-orange-500">✓</span> Safe Handover
+                        </div>
+                        <div class="flex items-center gap-2 text-slate-700 font-bold">
+                            <span class="text-orange-500">✓</span> Peace of Mind
+                        </div>
+                    </div>
+
+                    @* زر الإضافة الرئيسي *@
+                    <button class="group relative bg-slate-900 text-white px-12 py-6 rounded-[2.5rem] font-[900] text-lg hover:bg-orange-600 transition-all duration-500 shadow-2xl hover:shadow-orange-500/40">
+                        <span class="flex items-center gap-3">
+                            ADD PET FOR ADOPTION
+                            <span class="text-2xl group-hover:translate-x-2 transition-transform">🐾</span>
+                        </span>
+                    </button>
+                </div>
+
+                @* الجانب البصري: كرت صغير توضيحي *@
+                <div class="lg:w-2/5 w-full">
+                    <div class="bg-white p-8 rounded-[3rem] shadow-xl rotate-3 border-2 border-orange-50 hover:rotate-0 transition-transform duration-700">
+                        <div class="aspect-square bg-slate-100 rounded-[2rem] mb-6 overflow-hidden relative">
+                            <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=500" class="w-full h-full object-cover" alt="Happy Cat" />
+                            <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur px-4 py-2 rounded-2xl text-xs font-black text-slate-900 shadow-sm">
+                                🌟 New Journey Starts Here
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="h-4 bg-slate-100 rounded-full w-3/4"></div>
+                            <div class="h-4 bg-slate-50 rounded-full w-1/2"></div>
+                            <div class="pt-4 flex justify-between items-center">
+                                <div class="flex -space-x-3">
+                                    <div class="w-10 h-10 rounded-full border-2 border-white bg-slate-200"></div>
+                                    <div class="w-10 h-10 rounded-full border-2 border-white bg-orange-100"></div>
+                                </div>
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">54 Families Browsing</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    // الزر سيوجه المستخدم لصفحة الفورم الخاصة بالإضافة
+}
