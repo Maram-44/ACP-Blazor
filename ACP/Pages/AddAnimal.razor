@@ -1,247 +1,370 @@
 ﻿@page "/add-animal"
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@inject AnimalServices AnimalService
+@inject NavigationManager Navigation
 
-<section class="min-h-screen bg-white py-24 px-6 md:px-16 lg:px-24 relative overflow-hidden">
-    <div class="absolute top-0 right-0 w-1/3 h-full bg-slate-50 -skew-x-12 translate-x-20 z-0 hidden lg:block"></div>
+@* استخدام EditForm للتحقق من البيانات *@
+<EditForm Model="animalModel" OnValidSubmit="() => showConfirm = true">
+    <DataAnnotationsValidator />
 
-    <div class="container mx-auto max-w-6xl relative z-10">
-        <div class="mb-16">
-            <div class="inline-flex items-center gap-4 mb-6">
-                <span class="w-12 h-[3px] bg-orange-500 rounded-full"></span>
-                <span class="text-orange-600 font-black tracking-[0.2em] uppercase text-sm">New Listing</span>
+    <section class="min-h-screen bg-white py-24 px-6 md:px-16 lg:px-24 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-1/3 h-full bg-slate-50 -skew-x-12 translate-x-20 z-0 hidden lg:block"></div>
+
+        <div class="container mx-auto max-w-6xl relative z-10">
+            <div class="mb-16">
+                <div class="inline-flex items-center gap-4 mb-6">
+                    <span class="w-12 h-[3px] bg-orange-500 rounded-full"></span>
+                    <span class="text-orange-600 font-black tracking-[0.2em] uppercase text-sm">New Listing</span>
+                </div>
+                <h1 class="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter leading-none">
+                    Share the <span class="text-orange-600">Love,</span> <br>
+                    <span class="text-slate-400 italic">Register an Animal.</span>
+                </h1>
             </div>
-            <h1 class="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter leading-none">
-                Share the <span class="text-orange-600">Love,</span> <br>
-                <span class="text-slate-400 italic">Register an Animal.</span>
-            </h1>
-        </div>
 
-        <div class="flex flex-col-reverse lg:grid lg:grid-cols-12 gap-16">
+            <div class="flex flex-col-reverse lg:grid lg:grid-cols-12 gap-16">
 
-            <div class="lg:col-span-8 bg-white rounded-[4rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.05)] border border-slate-100 p-8 md:p-16">
-                <div class="grid md:grid-cols-2 gap-8">
+                <div class="lg:col-span-8 bg-white rounded-[4rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.05)] border border-slate-100 p-8 md:p-16">
+                    <div class="grid md:grid-cols-2 gap-8">
 
-                    <div class="space-y-4">
-                        <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Pet Name</label>
-                        <input type="text" placeholder="e.g. Buddy" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 transition-all" />
-                    </div>
-
-                    <div class="space-y-4">
-                        <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Category</label>
-                        <select class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 appearance-none transition-all">
-                            <option>Dog</option>
-                            <option>Cat</option>
-                            <option>Other</option>
-                        </select>
-                    </div>
-
-                    <div class="space-y-4">
-                        <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Breed</label>
-                        <input type="text" placeholder="e.g. Golden Retriever" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 transition-all" />
-                    </div>
-
-                    @* تم تطوير حقل التاريخ ليكون احترافياً *@
-                    <div class="space-y-4">
-                        <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Birth Date</label>
-                        <div class="relative custom-date-container">
-                            <input type="date" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 focus:bg-white rounded-3xl outline-none font-bold text-slate-800 transition-all cursor-pointer" />
-                        </div>
-                    </div>
-
-                    @* إضافة خانة الدولة *@
-                    <div class="space-y-4">
-                        <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Country</label>
-                        <select class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 appearance-none transition-all cursor-pointer">
-                            <option value="" disabled selected>Select Country</option>
-                            <option>Saudi Arabia</option>
-                            <option>United Arab Emirates</option>
-                            <option>Qatar</option>
-                            <option>Kuwait</option>
-                            <option>Egypt</option>
-                        </select>
-                    </div>
-
-                    <div class="space-y-4">
-                        <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">City</label>
-                        <input type="text" placeholder="Riyadh" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 transition-all" />
-                    </div>
-
-                    <div class="space-y-4">
-                        <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Passport Number <span class="text-[10px] text-slate-300">(Optional)</span></label>
-                        <input type="text" placeholder="P-123456" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 transition-all" />
-                    </div>
-
-                    <div class="space-y-4">
-                        <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Color</label>
-                        <input type="text" placeholder="e.g. Creamy White" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 transition-all" />
-                    </div>
-
-                    <div class="space-y-4">
-                        <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Gender</label>
-                        <select class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 appearance-none transition-all">
-                            <option>Male</option>
-                            <option>Female</option>
-                        </select>
-                    </div>
-
-                    <div class="md:col-span-2 space-y-4">
-                        <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Service Type</label>
-                        <div class="grid grid-cols-2 gap-4">
-                            <button @onclick="() => isFoster = false" class="@(!isFoster ? "bg-slate-900 text-white" : "bg-slate-50 text-slate-500") py-5 rounded-3xl font-black transition-all border-2 border-transparent">
-                                Forever Adoption
-                            </button>
-                            <button @onclick="() => isFoster = true" class="@(isFoster ? "bg-orange-600 text-white" : "bg-slate-50 text-slate-500") py-5 rounded-3xl font-black transition-all border-2 border-transparent">
-                                Temporary Fostering
-                            </button>
-                        </div>
-                    </div>
-
-                    @if (isFoster)
-                    {
-                        <div class="md:col-span-2 space-y-4 animate-fade-in">
-                            <label class="text-xs font-black uppercase tracking-widest text-orange-600 ml-2">Expected Return Date</label>
-                            <input type="date" class="w-full px-8 py-5 bg-orange-50 border-2 border-orange-200 rounded-3xl outline-none font-bold text-slate-800 transition-all cursor-pointer" />
-                        </div>
-                    }
-
-
-
-                    <div class="md:col-span-2 space-y-4">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 ml-2">
-                            <label class="text-xs font-black uppercase tracking-widest text-slate-400">Description</label>
-                            <span class="text-[10px] font-bold text-orange-500 italic bg-orange-50 px-3 py-1 rounded-full text-center">Describe behavior, surgeries, vaccinations, or any important notes.</span>
-                        </div>
-                        <textarea rows="5" placeholder="Tell us more about your pet..." class="w-full px-8 py-6 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-[2rem] outline-none font-bold text-slate-800 transition-all"></textarea>
-                    </div>
-
-                    <div class="md:col-span-2 space-y-6">
-                        <div class="flex items-center justify-between ml-2">
-                            <label class="text-xs font-black uppercase tracking-widest text-slate-400">Photos <span class="text-orange-500">(Max 4)</span></label>
-                            <span class="text-[10px] font-black text-slate-300">JPG, PNG ONLY</span>
+                        <div class="space-y-4">
+                            <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Pet Name</label>
+                            <InputText @bind-Value="animalModel.Name" placeholder="e.g. Buddy" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 transition-all" />
+                            <ValidationMessage For="() => animalModel.Name" class="text-red-500 text-[10px] font-bold ml-4" />
                         </div>
 
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div class="group relative aspect-square bg-slate-50 rounded-[2rem] border-4 border-dashed border-slate-100 flex flex-col items-center justify-center transition-all hover:border-orange-400 hover:bg-orange-50/30 cursor-pointer overflow-hidden">
-                                <div class="text-2xl group-hover:scale-110 transition-transform">📸</div>
-                                <span class="text-[10px] font-black text-slate-400 mt-2">Add Photo</span>
-                                <input type="file" multiple accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" />
-                            </div>
+                        <div class="space-y-4">
+                            <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Category</label>
+                            <InputSelect @bind-Value="animalModel.AnimalTypeId" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 appearance-none transition-all">
+                                <option value="">Select Category</option>
+                                @foreach(var type in animalTypes)
+                                {
+                                    <option value="@type.TypeId">@type.TypeName</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="() => animalModel.AnimalTypeId" class="text-red-500 text-[10px] font-bold ml-4" />
+                        </div>
 
-                            <div class="aspect-square bg-slate-50 rounded-[2rem] border-2 border-slate-100 flex items-center justify-center relative group">
-                                <span class="text-slate-200 font-black text-2xl group-hover:text-slate-300 transition-colors">2</span>
-                            </div>
-                            <div class="aspect-square bg-slate-50 rounded-[2rem] border-2 border-slate-100 flex items-center justify-center relative group">
-                                <span class="text-slate-200 font-black text-2xl group-hover:text-slate-300 transition-colors">3</span>
-                            </div>
-                            <div class="aspect-square bg-slate-50 rounded-[2rem] border-2 border-slate-100 flex items-center justify-center relative group">
-                                <span class="text-slate-200 font-black text-2xl group-hover:text-slate-300 transition-colors">4</span>
+                        <div class="space-y-4">
+                            <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Breed</label>
+                            <InputText @bind-Value="animalModel.Breed" placeholder="e.g. Golden Retriever" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 transition-all" />
+                            <ValidationMessage For="() => animalModel.Breed" class="text-red-500 text-[10px] font-bold ml-4" />
+                        </div>
+
+                        <div class="space-y-4">
+                            <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Birth Date</label>
+                            <div class="relative custom-date-container">
+                                <InputDate @bind-Value="animalModel.BirthDate" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 focus:bg-white rounded-3xl outline-none font-bold text-slate-800 transition-all cursor-pointer" />
                             </div>
                         </div>
+
+                        <div class="space-y-4">
+                            <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Country</label>
+                            <InputSelect @bind-Value="animalModel.Country" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 appearance-none transition-all cursor-pointer">
+                                <option value="" disabled selected>Select Country</option>
+                                <option value="Saudi Arabia">Saudi Arabia</option>
+                                <option value="United Arab Emirates">United Arab Emirates</option>
+                                <option value="Qatar">Qatar</option>
+                                <option value="Kuwait">Kuwait</option>
+                                <option value="Egypt">Egypt</option>
+                            </InputSelect>
+                            <ValidationMessage For="() => animalModel.Country" class="text-red-500 text-[10px] font-bold ml-4" />
+                        </div>
+
+                        <div class="space-y-4">
+                            <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">City</label>
+                            <InputText @bind-Value="animalModel.City" placeholder="Riyadh" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 transition-all" />
+                        </div>
+
+                        <div class="space-y-4">
+                            <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Passport Number <span class="text-[10px] text-slate-300">(Optional)</span></label>
+                            <InputText @bind-Value="animalModel.PassportNumber" placeholder="P-123456" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 transition-all" />
+                        </div>
+
+                        <div class="space-y-4">
+                            <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Color</label>
+                            <InputText @bind-Value="animalModel.Color" placeholder="e.g. Creamy White" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 transition-all" />
+                        </div>
+
+                        <div class="space-y-4">
+                            <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Gender</label>
+                            <InputSelect @bind-Value="animalModel.Gender" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 appearance-none transition-all">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </InputSelect>
+                        </div>
+
+                        <div class="md:col-span-2 space-y-4">
+                            <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Service Type</label>
+                            <div class="grid grid-cols-2 gap-4">
+                                @* تم تغيير نوع الزر لـ type="button" لمنع عمل Submit تلقائي *@
+                                <button type="button" @onclick="() => isFoster = false" class="@(!isFoster ? "bg-slate-900 text-white" : "bg-slate-50 text-slate-500") py-5 rounded-3xl font-black transition-all border-2 border-transparent">
+                                    Forever Adoption
+                                </button>
+                                <button type="button" @onclick="() => isFoster = true" class="@(isFoster ? "bg-orange-600 text-white" : "bg-slate-50 text-slate-500") py-5 rounded-3xl font-black transition-all border-2 border-transparent">
+                                    Temporary Fostering
+                                </button>
+                            </div>
+                        </div>
+
+                        @if (isFoster)
+                        {
+                            <div class="md:col-span-2 space-y-4 animate-fade-in">
+                                <label class="text-xs font-black uppercase tracking-widest text-orange-600 ml-2">Expected Return Date</label>
+                                <InputDate @bind-Value="animalModel.ReturnDate" class="w-full px-8 py-5 bg-orange-50 border-2 border-orange-200 rounded-3xl outline-none font-bold text-slate-800 transition-all cursor-pointer" />
+                            </div>
+                        }
+
+                        <div class="md:col-span-2 space-y-4">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 ml-2">
+                                <label class="text-xs font-black uppercase tracking-widest text-slate-400">Description</label>
+                                <span class="text-[10px] font-bold text-orange-500 italic bg-orange-50 px-3 py-1 rounded-full text-center">Describe behavior, surgeries, vaccinations, or any important notes.</span>
+                            </div>
+                            <InputTextArea @bind-Value="animalModel.Description" rows="5" placeholder="Tell us more about your pet..." class="w-full px-8 py-6 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-[2rem] outline-none font-bold text-slate-800 transition-all" />
+                            <ValidationMessage For="() => animalModel.Description" class="text-red-500 text-[10px] font-bold" />
+                        </div>
+
+                        <div class="md:col-span-2 space-y-6">
+                            <div class="flex items-center justify-between ml-2">
+                                <label class="text-xs font-black uppercase tracking-widest text-slate-400">Photos <span class="text-orange-500">(Max 4)</span></label>
+                                <span class="text-[10px] font-black text-slate-300">JPG, PNG ONLY</span>
+                            </div>
+
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                @* زر إضافة الصور *@
+                                <div class="group relative aspect-square bg-slate-50 rounded-[2rem] border-4 border-dashed border-slate-100 flex flex-col items-center justify-center transition-all hover:border-orange-400 hover:bg-orange-50/30 cursor-pointer overflow-hidden">
+                                    <div class="text-2xl group-hover:scale-110 transition-transform">📸</div>
+                                    <span class="text-[10px] font-black text-slate-400 mt-2">Add Photo</span>
+                                    <InputFile OnChange="HandleFileSelected" multiple accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" />
+                                </div>
+
+                                @* عرض الصور التي تم اختيارها بالفعل *@
+                                @for (int i = 0; i < 4; i++)
+                                {
+                                    int index = i;
+                                    <div class="aspect-square bg-slate-50 rounded-[2rem] border-2 border-slate-100 flex items-center justify-center relative group overflow-hidden">
+                                        @if (imagePreviews.Count > index)
+                                        {
+                                            <img src="@imagePreviews[index]" class="w-full h-full object-cover" />
+                                            @* زر لحذف الصورة إذا أراد المستخدم *@
+                                            <button type="button" @onclick="() => RemoveImage(index)" class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-slate-200 font-black text-2xl group-hover:text-slate-300 transition-colors">@(index + 1)</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-16">
+                        <button type="submit" class="w-full bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xl hover:bg-orange-600 hover:shadow-2xl hover:shadow-orange-200 transition-all flex items-center justify-center gap-4 group">
+                            Review & Post
+                            <span class="text-2xl group-hover:translate-x-3 transition-transform">→</span>
+                        </button>
                     </div>
                 </div>
 
-                <div class="mt-16">
-                    <button @onclick="() => showConfirm = true" class="w-full bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xl hover:bg-orange-600 hover:shadow-2xl hover:shadow-orange-200 transition-all flex items-center justify-center gap-4 group">
-                        Review & Post
-                        <span class="text-2xl group-hover:translate-x-3 transition-transform">→</span>
-                    </button>
-                </div>
-            </div>
+                <div class="lg:col-span-4 space-y-8 mb-16 lg:mb-0">
+                    <div class="bg-orange-600 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 text-900 opacity-10 text-9xl font-black">!</div>
+                        <h4 class="text-2xl font-black mb-4 italic text-white">Safety First</h4>
+                        <p class="text-orange-100 font-medium leading-relaxed italic">
+                            "Your transparency helps ensure the best future for your animal friend."
+                        </p>
+                    </div>
 
-            <div class="lg:col-span-4 space-y-8 mb-16 lg:mb-0">
-                <div class="bg-orange-600 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden">
-                    <div class="absolute -right-4 -top-4 text-900 opacity-10 text-9xl font-black">!</div>
-                    <h4 class="text-2xl font-black mb-4 italic text-white">Safety First</h4>
-                    <p class="text-orange-100 font-medium leading-relaxed italic">
-                        "Your transparency helps ensure the best future for your animal friend."
-                    </p>
+                    <div class="bg-slate-900 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden group">
+                        <div class="absolute -right-6 -bottom-6 text-white opacity-5 text-9xl font-black rotate-12 group-hover:rotate-0 transition-transform duration-500">🐾</div>
+                        <h4 class="text-2xl font-black mb-6 tracking-tighter italic">Helpful Tips</h4>
+                        <ul class="space-y-6">
+                            <li class="flex gap-4">
+                                <span class="text-orange-500 font-bold">01.</span>
+                                <p class="text-slate-400 text-sm font-bold leading-relaxed italic">Clear photos increase adoption rates by <span class="text-white">80%.</span></p>
+                            </li>
+                            <li class="flex gap-4">
+                                <span class="text-orange-500 font-bold">02.</span>
+                                <p class="text-slate-400 text-sm font-bold leading-relaxed italic">Mentioning <span class="text-white">vaccinations</span> builds trust immediately.</p>
+                            </li>
+                            <li class="flex gap-4">
+                                <span class="text-orange-500 font-bold">03.</span>
+                                <p class="text-slate-400 text-sm font-bold leading-relaxed italic">Be honest about <span class="text-white">behavior</span> to find the right match.</p>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-
-                <div class="bg-slate-900 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden group">
-                    <div class="absolute -right-6 -bottom-6 text-white opacity-5 text-9xl font-black rotate-12 group-hover:rotate-0 transition-transform duration-500">🐾</div>
-                    <h4 class="text-2xl font-black mb-6 tracking-tighter italic">Helpful Tips</h4>
-                    <ul class="space-y-6">
-                        <li class="flex gap-4">
-                            <span class="text-orange-500 font-bold">01.</span>
-                            <p class="text-slate-400 text-sm font-bold leading-relaxed italic">Clear photos increase adoption rates by <span class="text-white">80%.</span></p>
-                        </li>
-                        <li class="flex gap-4">
-                            <span class="text-orange-500 font-bold">02.</span>
-                            <p class="text-slate-400 text-sm font-bold leading-relaxed italic">Mentioning <span class="text-white">vaccinations</span> builds trust immediately.</p>
-                        </li>
-                        <li class="flex gap-4">
-                            <span class="text-orange-500 font-bold">03.</span>
-                            <p class="text-slate-400 text-sm font-bold leading-relaxed italic">Be honest about <span class="text-white">behavior</span> to find the right match.</p>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-@if (showConfirm)
-{
-    <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md overflow-y-auto">
-        <div class="bg-white rounded-[3.5rem] max-w-2xl w-full p-8 md:p-12 shadow-3xl animate-in zoom-in duration-300 my-8">
-            <div class="flex justify-between items-start mb-8">
-                <h2 class="text-4xl font-black text-slate-900 tracking-tighter leading-tight">Review <br> <span class="text-orange-600">Details</span></h2>
-                <span class="bg-slate-100 p-4 rounded-3xl text-2xl">📝</span>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 bg-slate-50 p-6 rounded-[2.5rem]">
-                <div class="flex flex-col gap-1 p-2 border-b md:border-b-0 md:border-r border-slate-200/50">
-                    <span class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Name</span>
-                    <span class="font-black text-slate-900">Buddy</span>
-                </div>
-                <div class="flex flex-col gap-1 p-2">
-                    <span class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Type / Breed</span>
-                    <span class="font-black text-slate-900">Dog - Golden</span>
-                </div>
-                <div class="flex flex-col gap-1 p-2 border-t border-slate-200/50">
-                    <span class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Birth Date</span>
-                    <span class="font-black text-slate-900">2023-05-12</span>
-                </div>
-                <div class="flex flex-col gap-1 p-2 border-t border-slate-200/50">
-                    <span class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Passport</span>
-                    <span class="font-black text-slate-900">P-990022</span>
-                </div>
-                <div class="flex flex-col gap-1 p-2 border-t border-slate-200/50">
-                    <span class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Listing Type</span>
-                    <span class="font-black text-orange-600">@(isFoster ? "Temporary Fostering" : "Adoption")</span>
-                </div>
-                <div class="flex flex-col gap-1 p-2 border-t border-slate-200/50">
-                    <span class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Location</span>
-                    <span class="font-black text-slate-900">Riyadh</span>
-                </div>
-                <div class="col-span-1 md:col-span-2 flex flex-col gap-1 p-2 border-t border-slate-200 mt-2">
-                    <span class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Description</span>
-                    <p class="text-sm font-bold text-slate-600 leading-relaxed italic">
-                        "He is very friendly, has taken all his vaccines, and loves to play in the park."
-                    </p>
-                </div>
-            </div>
-
-            <div class="flex flex-col sm:flex-row gap-4">
-                <button @onclick="() => showConfirm = false" class="flex-1 bg-slate-100 text-slate-900 py-5 rounded-2xl font-black hover:bg-slate-200 transition">Back to Edit</button>
-                <button class="flex-1 bg-orange-600 text-white py-5 rounded-2xl font-black shadow-lg shadow-orange-200 hover:bg-orange-700 transition">Confirm & Submit</button>
             </div>
         </div>
-    </div>
-}
+    </section>
+
+    @if (showConfirm)
+    {
+        <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md overflow-y-auto">
+            <div class="bg-white rounded-[3.5rem] max-w-2xl w-full p-8 md:p-12 shadow-3xl animate-in zoom-in duration-300 my-8">
+                <div class="flex justify-between items-start mb-8">
+                    <h2 class="text-4xl font-black text-slate-900 tracking-tighter leading-tight">Review <br> <span class="text-orange-600">Details</span></h2>
+                    <span class="bg-slate-100 p-4 rounded-3xl text-2xl">📝</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 bg-slate-50 p-6 rounded-[2.5rem]">
+                    <div class="flex flex-col gap-1 p-2 border-b md:border-b-0 md:border-r border-slate-200/50">
+                        <span class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Name</span>
+                        <span class="font-black text-slate-900">@animalModel.Name</span>
+                    </div>
+                    <div class="flex flex-col gap-1 p-2">
+                        <span class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Type / Breed</span>
+                        <span class="font-black text-slate-900">@animalModel.AnimalTypeId - @animalModel.Breed</span>
+                    </div>
+                    <div class="flex flex-col gap-1 p-2 border-t border-slate-200/50">
+                        <span class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Birth Date</span>
+                        <span class="font-black text-slate-900">@animalModel.BirthDate.ToShortDateString()</span>
+                    </div>
+                    <div class="flex flex-col gap-1 p-2 border-t border-slate-200/50">
+                        <span class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Passport</span>
+                        <span class="font-black text-slate-900">@(string.IsNullOrEmpty(animalModel.PassportNumber) ? "None" : animalModel.PassportNumber)</span>
+                    </div>
+                    <div class="flex flex-col gap-1 p-2 border-t border-slate-200/50">
+                        <span class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Listing Type</span>
+                        <span class="font-black text-orange-600">@(isFoster ? "Temporary Fostering" : "Adoption")</span>
+                    </div>
+                    <div class="flex flex-col gap-1 p-2 border-t border-slate-200/50">
+                        <span class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Location</span>
+                        <span class="font-black text-slate-900">@animalModel.City, @animalModel.Country</span>
+                    </div>
+                    <div class="col-span-1 md:col-span-2 flex flex-col gap-1 p-2 border-t border-slate-200 mt-2">
+                        <span class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Description</span>
+                        <p class="text-sm font-bold text-slate-600 leading-relaxed italic">
+                            "@animalModel.Description"
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button @onclick="() => showConfirm = false" class="flex-1 bg-slate-100 text-slate-900 py-5 rounded-2xl font-black hover:bg-slate-200 transition">Back to Edit</button>
+                    <button type="button" @onclick="HandleFinalSubmit" class="relative z-[110] flex-1 bg-orange-600 text-white py-5 rounded-2xl font-black shadow-lg shadow-orange-200 hover:bg-orange-700 transition">Confirm & Submit</button>
+                </div>
+            </div>
+        </div>
+    }
+
+
+</EditForm>
 
 @code {
+    // 1. استخدام الموديل الخاص بك
+    private AnimalUpsertFormModel animalModel = new();
     private bool isFoster = false;
     private bool showConfirm = false;
-}
+    private bool isSubmitting = false;
+    private List<AnimalType> animalTypes = new();
+    private List<string> imagePreviews = new(); // قائمة للمعاينة (Base64)
 
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        animalTypes = await AnimalService.GetAnimalTypes();
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var files = e.GetMultipleFiles(4);
+        // حد أقصى للقراءة 15 ميجابايت (للاحتياط فقط)
+        long maxAllowedSize = 1024 * 1024 * 15;
+
+        foreach (var file in files)
+        {
+            if (animalModel.SelectedImages.Count >= 4) break;
+
+            try
+            {
+                // --- السر هنا ---
+                // نطلب نسخة مصغرة (مثلاً 800 بكسل كافية جداً للرفع والمعاينة)
+                // هذه العملية تتم في المتصفح خارج ذاكرة WASM الضيقة
+                var resizedFile = await file.RequestImageFileAsync("image/jpeg", 800, 800);
+
+                // نخزن النسخة المصغرة في الموديل للإرسال
+                animalModel.SelectedImages.Add(resizedFile);
+
+                // للمعاينة: نقرأ النسخة المصغرة فقط
+                using var stream = resizedFile.OpenReadStream(maxAllowedSize);
+                var buffer = new byte[resizedFile.Size];
+                await stream.ReadAsync(buffer);
+
+                imagePreviews.Add($"data:image/jpeg;base64,{Convert.ToBase64String(buffer)}");
+
+                // تحرير الذاكرة فوراً
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Memory/File Error: {ex.Message}");
+            }
+        }
+    }
+    private async Task HandleFinalSubmit()
+    {
+        Console.WriteLine("Button Clicked!");
+        if (isSubmitting) return;
+
+        try
+        {
+            isSubmitting = true;
+
+            // تحديث منطق التاريخ بناءً على نوع الخدمة المختارة (Foster)
+            if (!isFoster)
+            {
+                animalModel.ReturnDate = null;
+            }
+
+            // استدعاء الدالة الخاصة بك التي ترسل MultipartFormDataContent
+            var success = await AnimalService.AddNewAnimalWithImages(animalModel);
+
+            if (success)
+            {
+                showConfirm = false;
+                Navigation.NavigateTo("/animals-list"); // أو الصفحة التي تريدها
+            }
+            else
+            {
+                // يمكن إضافة إشعار خطأ هنا
+                Console.WriteLine("Failed to add animal via API.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"System Error: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+
+    private void RemoveImage(int index)
+    {
+        animalModel.SelectedImages.RemoveAt(index);
+        imagePreviews.RemoveAt(index);
+    }
+
+
+    // ملاحظة: تأكد من ربط الحقول في الـ HTML كالتالي:
+    // لربط الـ Category (ID): @bind-Value="animalModel.AnimalTypeId"
+    // لربط الـ Name: @bind-Value="animalModel.Name"
+    // وهكذا لبقية الحقول...
+}
 <style>
-    /* تنسيق قائمة التاريخ الاحترافية */
+    /* التنسيقات الخاصة بك بقيت كما هي */
     input[type="date"]::-webkit-calendar-picker-indicator {
-        background-color: #ea580c; /* البرتقالي */
+        background-color: #ea580c;
         padding: 5px;
         cursor: pointer;
         border-radius: 8px;
-        filter: invert(1); /* يجعل الأيقونة بيضاء لتتناسب مع الخلفية البرتقالية */
+        filter: invert(1);
     }
 
     input[type="date"]:focus::-webkit-calendar-picker-indicator {

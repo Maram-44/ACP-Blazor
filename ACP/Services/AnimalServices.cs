@@ -1,6 +1,9 @@
 ﻿using ACP.Models.Animals;
+using System.Buffers.Text;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using static System.Net.WebRequestMethods;
 
 namespace ACP.Services
 {
@@ -23,16 +26,6 @@ namespace ACP.Services
         {
             return await _http.GetFromJsonAsync<Animal>($"api/animals/{id}");
         }
-
-        public async Task<int> AddNewAnimal(Animal animal)
-        {
-            var response = await _http.PostAsJsonAsync("api/animals", animal);
-            response.EnsureSuccessStatusCode();
-
-            var result = await response.Content.ReadFromJsonAsync<Dictionary<string, int>>();
-            return result!["animalId"];
-        }
-
         public async Task<bool> UpdateAnimal(int id, Animal animal)
         {
             var response = await _http.PutAsJsonAsync($"api/animals/{id}", animal);
@@ -57,11 +50,7 @@ namespace ACP.Services
                    ?? new List<Breed>();
         }
 
-        public async Task<List<AnimalType>> GetAnimalTypes()
-        {
-            return await _http.GetFromJsonAsync<List<AnimalType>>("api/animals/animal-types")
-                   ?? new List<AnimalType>();
-        }
+ 
 
         public async Task<List<Animal>> GetCustomerAnimalsAsync(int customerId)
         {
@@ -78,6 +67,82 @@ namespace ACP.Services
                 Console.WriteLine($"Error fetching animals: {ex.Message}");
                 return new List<Animal>();
             }
+        }
+
+
+
+
+
+
+
+
+        //new
+        public async Task<bool> AddNewAnimalWithImages(AnimalUpsertFormModel model)
+        {
+            // 1. إنشاء محتوى Form Data
+            using var content = new MultipartFormDataContent();
+
+            // 2. إضافة الحقول النصية والرقمية
+            content.Add(new StringContent(model.Name), "Name");
+            content.Add(new StringContent(model.Description), "Description");
+            content.Add(new StringContent(model.AnimalTypeId.ToString()), "AnimalTypeId");
+            content.Add(new StringContent(model.Breed), "Breed");
+            content.Add(new StringContent(model.Color), "Color");
+            content.Add(new StringContent(model.Gender), "Gender");
+            content.Add(new StringContent(model.Country), "Country");
+            content.Add(new StringContent(model.City), "City");
+            content.Add(new StringContent(model.BirthDate.ToString("yyyy-MM-dd")), "BirthDate");
+
+            // التعامل مع الحقول الاختيارية
+            if (model.ReturnDate.HasValue)
+                content.Add(new StringContent(model.ReturnDate.Value.ToString("yyyy-MM-dd")), "ReturnDate");
+
+            if (!string.IsNullOrEmpty(model.PassportNumber))
+                content.Add(new StringContent(model.PassportNumber), "PassportNumber");
+
+            // سيقوم الـ API تلقائياً في الخلفية بحساب الـ Status بناءً على الـ ReturnDate كما كتبت في كودك
+
+            // 3. معالجة الصور وإضافتها
+            foreach (var file in model.SelectedImages)
+            {
+                // تحديد حجم أقصى للملف (مثلاً 5 ميجابايت) لتجنب الاستثناءات في المتصفح
+                var fileContent = new StreamContent(file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5));
+                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+
+                // "Images" هو اسم الحقل المتوقع في الـ DTO الخاص بالـ API
+                content.Add(fileContent, "Images", file.Name);
+            }
+
+            // 4. إرسال الطلب للـ API
+            var response = await _http.PostAsync("api/animals/add", content);
+
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<List<AnimalType>> GetAnimalTypes()
+        {
+            return await _http.GetFromJsonAsync<List<AnimalType>>("api/animals/animal-types")
+                   ?? new List<AnimalType>();
+        }
+        // جلب حيوانات المستخدم الحالي (تتطلب توكن)
+        public async Task<List<AnimalReadDto>> GetMyAnimalsAsync()
+        {
+            return await _http.GetFromJsonAsync<List<AnimalReadDto>>("api/animals/my-animals");
+        }
+
+        // جلب الحيوانات بنظام الـ Cursor (للتحميل اللانهائي أو التصفح)
+        public async Task<List<AnimalReadDto>> GetAnimalsCursorAsync(int? lastId, int take = 6)
+        {
+            var url = $"api/animals/cursor?take={take}";
+            if (lastId.HasValue) url += $"&lastId={lastId}";
+
+            return await _http.GetFromJsonAsync<List<AnimalReadDto>>(url);
+        }
+
+        // جلب تفاصيل حيوان محدد
+        public async Task<AnimalReadDto> GetAnimalByIdAsync(int id)
+        {
+            return await _http.GetFromJsonAsync<AnimalReadDto>($"api/animals/{id}");
         }
     }
 }
