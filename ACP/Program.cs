@@ -20,52 +20,57 @@ builder.Services.AddTransient<JwtHandler>();
 builder.Services.AddHttpClient<AnimalOprationsServices>((sp, client) =>
 {
     client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-});
+}).AddHttpMessageHandler<JwtHandler>();
 
 builder.Services.AddHttpClient<AnimalServices>((sp, client) =>
 {
     client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-});
+}).AddHttpMessageHandler<JwtHandler>();
 
 builder.Services.AddHttpClient<MedicalCenterReservationService>((sp, client) =>
 {
     client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-});
+}).AddHttpMessageHandler<JwtHandler>();
 
 builder.Services.AddHttpClient<MedicalCenterService>((sp, client) =>
 {
     client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-});
+}).AddHttpMessageHandler<JwtHandler>();
 
 builder.Services.AddHttpClient<AccountService>((sp, client) =>
 {
     client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-});
+}).AddHttpMessageHandler<JwtHandler>();
 
 builder.Services.AddHttpClient<BasketService>((sp, client) =>
 {
     client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-});
+}).AddHttpMessageHandler<JwtHandler>();
 
 builder.Services.AddHttpClient<ProductService>((sp, client) =>
 {
     client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-});
+}).AddHttpMessageHandler<JwtHandler>();
 
 builder.Services.AddHttpClient<SubscriptionService>((sp, client) =>
 {
     client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-});
+}).AddHttpMessageHandler<JwtHandler>();
 
 builder.Services.AddHttpClient<NotificationClientService>((sp, client) =>
 {
     client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-});
+}).AddHttpMessageHandler<JwtHandler>();
 
 builder.Services.AddHttpClient<CustomerProfile>((sp, client) =>
 {
     client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-});
+}).AddHttpMessageHandler<JwtHandler>();
+
+builder.Services.AddHttpClient<AnimalTransactionClientService>((sp, client) =>
+{
+    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
+}).AddHttpMessageHandler<JwtHandler>();
 
 builder.Services.AddAuthorizationCore();
 
