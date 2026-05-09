@@ -8,6 +8,7 @@
         public string Breed { get; set; } = null!;
         public string Color { get; set; } = null!;
         public string Gender { get; set; } = null!;
+        public DateTime? ReturnDate { get; set; }
         public string Country { get; set; } = null!;
         public string City { get; set; } = null!;
         public string Status { get; set; } = null!;

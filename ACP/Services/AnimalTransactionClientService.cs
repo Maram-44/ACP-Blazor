@@ -1,7 +1,8 @@
 ﻿using ACP.Models;
 using ACP.Models.Animals;
-using System.Net.Http.Json;
 using ACP.Models.Animals;
+using System.Buffers.Text;
+using System.Net.Http.Json;
 
 namespace ACP.Services
 {
@@ -41,6 +42,30 @@ namespace ACP.Services
             var response = await _http.PostAsync($"{BasePath}/accept-applicant/{applicationId}", null);
             return await response.Content.ReadFromJsonAsync<ApiResponse<ContactDetailsDTO>>();
         }
+
+        public async Task<List<MyApplicationDTO>> GetMyApplicationsAsync()
+        {
+            try
+            {
+                // سيقوم الـ HttpClient تلقائياً بإرسال الـ JWT Token 
+                // إذا كان الـ Handler مبرمجاً على ذلك في Program.cs
+                var response = await _http.GetAsync($"{BasePath}/my-applications");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<List<MyApplicationDTO>>()
+                           ?? new List<MyApplicationDTO>();
+                }
+
+                return new List<MyApplicationDTO>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"خطأ أثناء جلب طلباتي: {ex.Message}");
+                return new List<MyApplicationDTO>();
+            }
+        }
+ 
 
         // 5. رفض طلب متقدم
         public async Task<ApiResponse<string>?> RejectApplicantAsync(int applicationId)
