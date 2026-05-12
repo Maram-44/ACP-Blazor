@@ -12,6 +12,7 @@
         public string Country { get; set; } = null!;
         public string City { get; set; } = null!;
         public string Status { get; set; } = null!;
+        public string AnimalType { get; set; } = null!;
         public DateTime BirthDate { get; set; }
         public List<string> ImagePaths { get; set; } = new();
     }
