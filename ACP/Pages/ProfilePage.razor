@@ -1,0 +1,189 @@
+﻿@page "/profile"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@attribute [Authorize]
+
+<div class="relative min-h-screen w-full flex items-start justify-center pt-32 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
+
+    @* Background *@
+    <div class="absolute inset-0 z-0">
+        <div class="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
+             style="background-image: url('Images/Animals/back.jpeg');"></div>
+        <div class="absolute inset-0 bg-white/10 backdrop-blur-[2px]"></div>
+    </div>
+
+    @* Main Card *@
+    <div class="relative z-10 w-full max-w-6xl bg-white/90 backdrop-blur-2xl shadow-[0_32px_64px_rgba(0,0,0,0.15)] rounded-[3rem] p-6 md:p-12 border border-white/60">
+
+        @if (isLoading)
+        {
+            <div class="flex flex-col items-center justify-center py-20">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-orange-600"></div>
+                <span class="mt-4 text-slate-600 font-bold animate-pulse">Loading Profile...</span>
+            </div>
+        }
+        else if (userProfile != null)
+        {
+            @* Header Section - Modified for Official Identity Photo *@
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-16 border-b border-slate-100 pb-10">
+                <div class="text-center md:text-left">
+                    <h2 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">Account <span class="text-orange-600">Settings</span></h2>
+                    <p class="text-slate-400 text-xs font-medium uppercase tracking-[0.2em] mt-2">Identity Verification Profile 🛡️</p>
+                </div>
+
+                @* منطقة الصورة الرسمية (مستطيلة واحترافية) *@
+                <div class="relative group">
+                    <div class="w-52 h-36 md:w-64 md:h-40 rounded-[1.5rem] overflow-hidden bg-slate-50 border-4 border-white shadow-2xl transition-all duration-300 ring-1 ring-slate-200">
+                        @if (!string.IsNullOrEmpty(imagePreview))
+                        {
+                            <img src="@imagePreview" class="w-full h-full object-cover" />
+                        }
+                        else
+                        {
+                            <div class="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-300 gap-2 p-4 text-center">
+                                <i class="fas fa-id-card text-4xl"></i>
+                                <span class="text-[9px] font-black uppercase tracking-tighter leading-tight">Please upload your photo<br />holding your identity</span>
+                            </div>
+                        }
+
+                        <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <i class="fas fa-cloud-upload-alt text-white text-2xl"></i>
+                        </div>
+                    </div>
+
+                    <label class="absolute -bottom-3 -right-3 bg-slate-900 text-white w-12 h-12 rounded-2xl flex items-center justify-center cursor-pointer shadow-xl hover:bg-orange-600 transition-all border-4 border-white z-20">
+                        <i class="fas fa-camera"></i>
+                        <InputFile OnChange="HandleImageUpload" class="hidden" />
+                    </label>
+
+                    <div class="absolute -bottom-10 left-1/2 -translate-x-1/2 w-full text-center">
+                        <span class="text-[9px] font-bold text-slate-400 italic">Selfie with ID is required for verification</span>
+                    </div>
+                </div>
+            </div>
+
+            <EditForm Model="userProfile" OnValidSubmit="HandleUpdate" class="space-y-10">
+                <DataAnnotationsValidator />
+
+                @* Section 1: Personal *@
+                <section class="bg-slate-50/40 p-8 rounded-[2.5rem] border border-white/50">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-10 h-10 bg-orange-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-user text-sm"></i>
+                        </div>
+                        <h3 class="font-black text-slate-800 text-lg">Personal Details</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">First Name</label>
+                            <InputText @bind-Value="userProfile.FirstName" class="w-full p-4 bg-white/80 border border-transparent rounded-[1.2rem] focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 outline-none text-sm font-bold text-slate-700 shadow-sm" />
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Father Name</label>
+                            <InputText @bind-Value="userProfile.MiddleName" class="w-full p-4 bg-white/80 border border-transparent rounded-[1.2rem] focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 outline-none text-sm font-bold text-slate-700 shadow-sm" />
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Last Name</label>
+                            <InputText @bind-Value="userProfile.LastName" class="w-full p-4 bg-white/80 border border-transparent rounded-[1.2rem] focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 outline-none text-sm font-bold text-slate-700 shadow-sm" />
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Phone</label>
+                            <InputText @bind-Value="userProfile.PhoneNumber" class="w-full p-4 bg-white/80 border border-transparent rounded-[1.2rem] focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 outline-none text-sm font-bold text-slate-700 shadow-sm" />
+                        </div>
+                    </div>
+                </section>
+
+                @* Section 2: Identity *@
+                <section class="bg-slate-50/40 p-8 rounded-[2.5rem] border border-white/50">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-10 h-10 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-id-card text-sm"></i>
+                        </div>
+                        <h3 class="font-black text-slate-800 text-lg">Identification</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">ID Number</label>
+                            <InputText @bind-Value="userProfile.IdentityNumber" class="w-full p-4 bg-white/80 border border-transparent rounded-[1.2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none text-sm font-bold shadow-sm" />
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Type</label>
+                            <InputSelect @bind-Value="userProfile.TypeOfIdentity" class="w-full p-4 bg-white/80 border border-transparent rounded-[1.2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none text-sm font-bold shadow-sm cursor-pointer">
+                                <option value="">Select...</option>
+                                <option value="National ID">National ID</option>
+                                <option value="Passport">Passport</option>
+                            </InputSelect>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Nationality</label>
+                            <InputText @bind-Value="userProfile.Nationality" class="w-full p-4 bg-white/80 border border-transparent rounded-[1.2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none text-sm font-bold shadow-sm" />
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Email Address</label>
+                            <input type="text" value="@userProfile.Email" readonly class="w-full p-4 bg-slate-200/50 border-none rounded-[1.2rem] text-slate-500 cursor-not-allowed text-sm font-bold shadow-inner" />
+                        </div>
+                    </div>
+                </section>
+
+                @* Section 3: Security *@
+                <section class="bg-slate-50/40 p-8 rounded-[2.5rem] border border-white/50">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-10 h-10 bg-red-500 text-white rounded-2xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-lock text-sm"></i>
+                        </div>
+                        <h3 class="font-black text-slate-800 text-lg">Security</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Current Password</label>
+                            <InputText type="password" @bind-Value="userProfile.CurrentPassword" placeholder="••••••••" class="w-full p-4 bg-white/80 border border-transparent rounded-[1.2rem] focus:ring-4 focus:ring-red-500/10 focus:border-red-500 outline-none text-sm font-bold shadow-sm" />
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">New Password</label>
+                            <InputText type="password" @bind-Value="userProfile.NewPassword" placeholder="••••••••" class="w-full p-4 bg-white/80 border border-transparent rounded-[1.2rem] focus:ring-4 focus:ring-red-500/10 focus:border-red-500 outline-none text-sm font-bold shadow-sm" />
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Confirm New</label>
+                            <InputText type="password" @bind-Value="userProfile.ConfirmNewPassword" placeholder="••••••••" class="w-full p-4 bg-white/80 border border-transparent rounded-[1.2rem] focus:ring-4 focus:ring-red-500/10 focus:border-red-500 outline-none text-sm font-bold shadow-sm" />
+                        </div>
+                    </div>
+                </section>
+
+                @* Action Button *@
+                <div class="pt-8 flex justify-end items-center gap-6">
+                    <button type="submit" disabled="@isSaving"
+                            class="bg-orange-600 text-white px-14 py-5 rounded-[1.5rem] font-black shadow-2xl hover:bg-orange-700 hover:scale-105 active:scale-95 transition-all duration-300 disabled:opacity-50 text-xs uppercase tracking-widest">
+                        <span class="flex items-center gap-3">
+                            @if (isSaving)
+                            {
+                                <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            }
+                            @(isSaving ? "Saving..." : "Save Profile")
+                        </span>
+                    </button>
+                </div>
+            </EditForm>
+        }
+    </div>
+</div>
+
+@* Success Modal *@
+@if (showSuccessModal)
+{
+    <div class="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/70 backdrop-blur-2xl transition-opacity"></div>
+        <div class="relative bg-white rounded-[3.5rem] p-12 shadow-2xl max-w-sm w-full text-center border border-white/20 transform animate-in zoom-in-95">
+            <div class="w-24 h-24 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
+                <i class="fas fa-check text-4xl animate-bounce"></i>
+            </div>
+            <h3 class="text-3xl font-black text-slate-900 mb-3 tracking-tight">Updated!</h3>
+            <p class="text-slate-400 font-bold mb-10 text-sm">Your profile and identity image have been updated.</p>
+            <button @onclick="CloseSuccessModal"
+                    class="w-full bg-orange-600 text-white py-5 rounded-2xl font-black hover:bg-slate-900 transition-all active:scale-95 shadow-xl text-xs tracking-widest uppercase">
+                Got it!
+            </button>
+        </div>
+    </div>
+}

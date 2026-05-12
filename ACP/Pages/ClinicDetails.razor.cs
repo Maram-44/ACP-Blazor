@@ -1,18 +1,22 @@
 ﻿using Microsoft.AspNetCore.Components;
 using ACP.Models.MedicalCenters;
 using ACP.Services;
-
-
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ACP.Pages
 {
     public partial class ClinicDetailsBase : ComponentBase
     {
-        [Inject] public ACP.Services.MedicalCenterService MedicalService { get; set; } = default!;
-        [Inject] public NavigationManager Navigation { get; set; } = default!;
+        [Inject]
+        public ACP.Services. MedicalCenterService MedicalService { get; set; } = default!;
 
-       
-        [Parameter] public int Id { get; set; }
+        [Inject]
+        public NavigationManager Navigation { get; set; } = default!;
+
+        [Parameter]
+        public int Id { get; set; }
 
         protected int currentImageIndex = 0;
         protected MedicalCenter? currentCenter;
@@ -25,12 +29,12 @@ namespace ACP.Pages
             {
                 if (Id > 0)
                 {
-                   
                     currentCenter = await MedicalService.GetById(Id);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error fetching clinic: {ex.Message}");
                 currentCenter = null;
             }
             finally
@@ -39,25 +43,44 @@ namespace ACP.Pages
             }
         }
 
+        // منطق فصل الاسم ديناميكياً
+        protected (string grayPart, string orangePart) SplitClinicName(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName)) return ("", "");
+
+            var words = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            // تلوين أول كلمتين بالرمادي والباقي بالبرتقالي
+            if (words.Length <= 2)
+                return (fullName, "");
+
+            string gray = string.Join(" ", words.Take(2));
+            string orange = string.Join(" ", words.Skip(2));
+
+            return (gray, orange);
+        }
+
+        protected void SelectService(int index)
+        {
+            currentImageIndex = index;
+            StateHasChanged();
+        }
+
         protected void NextImage()
         {
-            if (currentCenter?.medicalCenterServices != null && currentCenter.medicalCenterServices.Any())
+            var services = currentCenter?.medicalCenterServices;
+            if (services != null && services.Any())
             {
-                if (currentImageIndex < currentCenter.medicalCenterServices.Count - 1)
-                    currentImageIndex++;
-                else
-                    currentImageIndex = 0;
+                currentImageIndex = (currentImageIndex + 1) % services.Count;
             }
         }
 
         protected void PrevImage()
         {
-            if (currentCenter?.medicalCenterServices != null && currentCenter.medicalCenterServices.Any())
+            var services = currentCenter?.medicalCenterServices;
+            if (services != null && services.Any())
             {
-                if (currentImageIndex > 0)
-                    currentImageIndex--;
-                else
-                    currentImageIndex = currentCenter.medicalCenterServices.Count - 1;
+                currentImageIndex = (currentImageIndex - 1 + services.Count) % services.Count;
             }
         }
     }
