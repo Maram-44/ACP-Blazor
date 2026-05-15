@@ -1,266 +1,271 @@
 ﻿@page "/animal-details/{AnimalId:int}"
 
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
+
 <style>
-    /* خلفية دافئة وحيوية */
-    body {
-        background-color: #fffaf5;
-        background-image: radial-gradient(circle at 0% 0%, rgba(249, 115, 22, 0.08) 0%, transparent 40%), radial-gradient(circle at 100% 100%, rgba(249, 115, 22, 0.05) 0%, transparent 40%);
-        background-attachment: fixed;
+    :root {
+        --alef-black: #0F172A;
+        --alef-gray: #94A3B8;
+        --vibrant-orange: #EA580C;
     }
 
-    /* تعديل ألوان الكاردات لتطابق كارد الوصف */
-    .vibrant-card {
-        background: linear-gradient(135deg, #ffffff 0%, #ffffff 70%, #fff7ed 100%);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 237, 213, 0.8);
-        border-radius: 2.5rem;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    .animal-app-wrapper {
+        font-family: 'Poppins', sans-serif;
+        position: relative;
+        padding: 160px 5% 80px 5%;
+        overflow: hidden;
+        background: radial-gradient(circle at top right, #FFE7D1 0%, transparent 35%), radial-gradient(circle at bottom left, #FFF1E6 0%, transparent 30%), linear-gradient(to bottom, #FFFBF8, #FFFFFF);
     }
 
-        .vibrant-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px -15px rgba(234, 88, 12, 0.15);
+    /* موازاة الصورة مع الكلام */
+    .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 60px;
+        align-items: start; /* يبدأون من نفس السطر */
+    }
+
+    .image-frame {
+        width: 100%;
+        height: 620px;
+        border-radius: 3.5rem;
+        overflow: hidden;
+        box-shadow: 0 40px 80px rgba(15, 23, 42, 0.06);
+        position: relative;
+    }
+
+        .image-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
-    /* تأثيرات الزر */
-    .btn-adopt {
+    .hero-title {
+        font-weight: 900;
+        line-height: 1.1;
+    }
+
+    .line-welcome {
+        font-size: clamp(2rem, 4vw, 2.8rem);
+        color: var(--alef-black);
+        font-weight: 800;
+    }
+
+    .line-petname {
+        font-size: clamp(2.5rem, 6vw, 5rem);
+        color: var(--alef-gray);
+        margin: 5px 0;
+        letter-spacing: -2px;
+    }
+
+    .line-breed {
+        font-size: clamp(1.5rem, 3vw, 2.2rem);
+        color: var(--vibrant-orange);
+        font-weight: 800;
+    }
+
+    .info-boxes-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid rgba(148, 163, 184, 0.1);
+    }
+
+    .info-tag {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--alef-gray);
+        text-transform: uppercase;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .info-text {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--alef-black);
+    }
+
+    /* ستايل الوصف مثل العيادة تماماً */
+    .services-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin: 80px 0 40px 0;
+    }
+
+    .services-title {
+        font-weight: 900;
+        color: var(--vibrant-orange);
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.25em;
+    }
+
+    .services-divider {
+        height: 2px;
+        flex-grow: 1;
+        background: var(--vibrant-orange);
+        opacity: 0.15;
+    }
+
+    .adopt-action-btn {
+        width: 100%;
+        margin-top: 40px;
+        background: var(--alef-black);
+        color: white;
+        padding: 25px;
+        border-radius: 2rem;
+        font-weight: 900;
+        font-size: 1.2rem;
         transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
     }
 
-        .btn-adopt:active {
-            transform: scale(0.95);
+        .adopt-action-btn:hover {
+            background: var(--vibrant-orange);
+            transform: translateY(-5px);
         }
+
+    /* Modal المحاذاة والضباب */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(12px);
+        background: rgba(15, 23, 42, 0.4);
+        padding: 20px;
+    }
+
+    .modal-card {
+        background: white;
+        width: 100%;
+        max-width: 450px;
+        border-radius: 3rem;
+        padding: 50px 40px;
+        text-align: center;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+    }
+
+    /* Responsive */
+    @@media (max-width: 1024px) {
+        .main-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .image-frame {
+            height: 450px;
+        }
+    }
 </style>
 
-<main class="container mx-auto px-6 py-12 mt-20 text-left" dir="ltr">
-    @if (isLoading)
-    {
-        <div class="flex flex-col items-center justify-center py-40">
-            <div class="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin"></div>
-            <p class="mt-6 text-orange-600 font-bold animate-pulse tracking-widest">LOADING DATA...</p>
-        </div>
-    }
-    else if (AnimalItem == null)
-    {
-        <div class="text-center p-20 vibrant-card max-w-2xl mx-auto border-dashed">
-            <i class="fas fa-search text-5xl text-orange-200 mb-6 block"></i>
-            <h2 class="text-2xl font-bold text-slate-800">Animal not found!</h2>
-        </div>
-    }
-    else
-    {
-        @* إضافة items-stretch لضمان تناسق الطول بصرياً *@
-        <div class="flex flex-col lg:flex-row gap-12 mb-10 items-stretch">
-            @* الجانب الأيسر: الصورة والبيانات الأساسية *@
-            <div class="lg:w-2/5 group flex flex-col relative">
-                <div class="relative rounded-[3rem] overflow-hidden bg-slate-900 border-4 border-white shadow-xl flex-grow">
+<div class="animal-app-wrapper">
+    <div class="main-content-layout">
 
-                    @* تعديل عرض الصور واستخدام نظام الـ Index والأسهم *@
-                    @if (AnimalItem.animalImages != null && AnimalItem.animalImages.Any())
+        <div class="main-grid">
+
+            <div class="order-2 lg:order-1">
+                <div class="image-frame">
+                    @if (AnimalItem?.ImagePaths != null && AnimalItem.ImagePaths.Any())
                     {
-                        @* تم استخدام ElementAt لحل مشكلة الـ ICollection *@
-                        <img src="@(AnimalItem.animalImages.ElementAt(currentImageIndex).Image)"
-                             class="w-full h-[500px] object-cover transition-transform duration-1000 group-hover:scale-110" />
-
-                        @* أزرار التنقل بين الصور *@
-                        @if (AnimalItem.animalImages.Count > 1)
-                        {
-                            <button type="button" @onclick="PrevImg" class="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-orange-600 p-4 rounded-full text-white transition-all shadow-lg border border-white/10">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-
-                            <button type="button" @onclick="NextImg" class="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-orange-600 p-4 rounded-full text-white transition-all shadow-lg border border-white/10">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-
-                            @* عداد الصور الصغير في الأعلى *@
-                            <div class="absolute top-6 right-6 z-20 bg-orange-600/90 backdrop-blur-md px-4 py-1.5 rounded-full text-[11px] text-white font-black tracking-widest shadow-lg">
-                                <i class="fas fa-images mr-1"></i> @(currentImageIndex + 1) / @AnimalItem.animalImages.Count
-                            </div>
-                        }
+                        <img src="@AnimalItem.ImagePaths[currentImageIndex]" />
                     }
-                    else
-                    {
-                        <img src="e.png" class="w-full h-[500px] object-cover" />
-                    }
-
-                    @* شريط البيانات السريع على الصورة - تم تصحيح الكلاس bg-gradient-to-t *@
-                    <div class="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/90 via-black/40 to-transparent text-white z-10">
-                        <div class="grid grid-cols-3 gap-4 text-center">
-                            <div>
-                                <p class="text-xl font-black uppercase">@AnimalItem.Gender</p>
-                                <p class="text-[9px] tracking-widest opacity-60">GENDER</p>
-                            </div>
-                            <div class="border-x border-white/20">
-                                <p class="text-xl font-black text-orange-400 uppercase">@breedName</p>
-                                <p class="text-[9px] tracking-widest opacity-60">BREED</p>
-                            </div>
-                            <div>
-                                <p class="text-xl font-black uppercase">@typeName</p>
-                                <p class="text-[9px] tracking-widest opacity-60">TYPE</p>
-                            </div>
-                        </div>
+                    <div class="absolute bottom-8 w-full flex justify-center gap-4">
+                        <button @onclick="PrevImg" class="w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center text-slate-800 hover:bg-orange-600 hover:text-white transition-all border-none cursor-pointer">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button @onclick="NextImg" class="w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center text-slate-800 hover:bg-orange-600 hover:text-white transition-all border-none cursor-pointer">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
                 </div>
+            </div>
 
-                @* ربط الزر بحدث HandleAdoptionClick وتعديل النص للـ Upper *@
-                <button type="button" @onclick="HandleAdoptionClick" class="btn-adopt w-full mt-8 bg-orange-600 hover:bg-orange-700 text-white font-black py-6 rounded-[2rem] flex items-center justify-center gap-3 shadow-lg shadow-orange-600/20">
-                    <i class="fas fa-heart group-hover:animate-ping"></i>
-                    <span>ADOPT @(AnimalItem.Name?.ToUpper() ?? "PET")</span>
+            <div class="order-1 lg:order-2">
+                <div class="pet-profile-label" style="font-weight: 900; color: var(--vibrant-orange); font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px;">
+                    <div class="w-10 h-[3px] bg-orange-600 rounded-full"></div>
+                    Pet Profile
+                </div>
+
+                <div class="hero-title">
+                    <div class="line-welcome">Meet Your Friend</div>
+                    <div class="line-petname">@AnimalItem?.Name</div>
+                    <div class="line-breed">@AnimalItem?.AnimalType • @AnimalItem?.Breed</div>
+                </div>
+
+                <div class="info-boxes-grid">
+                    <div><span class="info-tag">Gender</span><span class="info-text">@AnimalItem?.Gender</span></div>
+                    <div><span class="info-tag">Age</span><span class="info-text">@CalculateAge(AnimalItem.BirthDate)</span></div>
+                    <div><span class="info-tag">Color</span><span class="info-text">@AnimalItem?.Color</span></div>
+                    <div><span class="info-tag">Current Status</span><span class="info-text text-orange-600">@AnimalItem?.Status</span></div>
+                    <div><span class="info-tag">City</span><span class="info-text">@AnimalItem?.City</span></div>
+                    <div><span class="info-tag">Country</span><span class="info-text">@AnimalItem?.Country</span></div>
+
+                    @if (AnimalItem.Status?.Contains("Foster", StringComparison.OrdinalIgnoreCase) == true && AnimalItem.ReturnDate.HasValue)
+                    {
+                        <div style="grid-column: span 2; background: #FFF7ED; padding: 20px; border-radius: 20px; border: 1px dashed var(--vibrant-orange); display: flex; align-items: center; gap: 15px;">
+                            <i class="fas fa-calendar-alt text-orange-600 text-xl"></i>
+                            <div>
+                                <span class="info-tag">Available Until</span>
+                                <span class="info-text">@AnimalItem.ReturnDate.Value.ToString("MMMM dd, yyyy")</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <button @onclick="HandleAdoptionClick" class="adopt-action-btn">
+                    Request To Take @AnimalItem?.Name Home
                 </button>
             </div>
-            @* الجانب الأيمن: تفاصيل البيانات الكاملة *@
-            <div class="lg:w-3/5 flex flex-col justify-between space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                    @* بطاقة المعلومات الأساسية *@
-                    <div class="vibrant-card p-8 shadow-sm">
-                        <h3 class="text-lg font-black text-slate-800 mb-6 flex items-center gap-3">
-                            <i class="fas fa-info-circle text-orange-500"></i> Basic Info
-                        </h3>
-                        <div class="space-y-4 text-sm">
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-400">Full Name</span>
-                                <span class="font-bold text-slate-800">@AnimalItem.Name</span>
-                            </div>
-                            <div class="flex justify-between items-center border-t border-orange-100/30 pt-4">
-                                <span class="text-slate-400">Primary Color</span>
-                                <span class="font-bold text-slate-800">@AnimalItem.Color</span>
-                            </div>
-                            <div class="flex justify-between items-center border-t border-orange-100/30 pt-4">
-                                <span class="text-slate-400">Age</span>
-                                <span class="font-black text-orange-600">
-                                    @{
-                                        var currentAge = DateTime.Now.Year - AnimalItem.BirthDate.Year;
-                                        if (AnimalItem.BirthDate.Date > DateTime.Now.AddYears(-currentAge)) currentAge--;
-                                        <span>@(currentAge <= 0 ? "Less than a year" : $"{currentAge} Year(s)")</span>
-                                    }
-                                </span>
-                            </div>
-                            <div class="flex justify-between items-center border-t border-orange-100/30 pt-4">
-                                <span class="text-slate-400">Status</span>
-                                @{
-                                    string sText = "No Data"; // نص أولي للكشف فقط
-                                    string sClass = "text-slate-400";
-
-                                    if (AnimalItem != null && AnimalItem.Status != null)
-                                    {
-                                        // محاولة التحويل لرقم
-                                        bool isNumber = int.TryParse(AnimalItem.Status.ToString(), out int statusValue);
-
-                                        if (isNumber)
-                                        {
-                                            switch (statusValue)
-                                            {
-                                                case 1: sText = "AvailableForAdoption"; sClass = "text-green-600"; break;
-                                                case 2: sText = "FosterCare"; sClass = "text-blue-500"; break;
-                                                case 3: sText = "Adopted"; sClass = "text-red-500"; break;
-                                                case 4: sText = "UnAvailableForAdoption"; sClass = "text-orange-500"; break;
-                                                default: sText = "Status Number: " + statusValue; sClass = "text-purple-600"; break;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            // إذا كانت الحالة نصية وليست رقماً
-                                            sText = " " + AnimalItem.Status.ToString();
-                                        }
-                                    }
-                                }
-                                <span class="font-black uppercase text-xs @sClass">@sText</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    @* بطاقة الموقع والطبيعة *@
-                    <div class="vibrant-card p-8 shadow-sm">
-                        <h3 class="text-lg font-black text-slate-800 mb-6 flex items-center gap-3">
-                            <i class="fas fa-map-marked-alt text-slate-600"></i> Location
-                        </h3>
-                        <div class="space-y-4 text-sm">
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-400">Country</span>
-                                <span class="font-bold text-slate-800">@AnimalItem.Country</span>
-                            </div>
-                            <div class="flex justify-between items-center border-t border-orange-100/30 pt-4">
-                                <span class="text-slate-400">City</span>
-                                <span class="font-bold text-slate-800">@AnimalItem.City</span>
-                            </div>
-                            <div class="flex justify-between items-center border-t border-orange-100/30 pt-4">
-                                <span class="text-slate-400">Is Pet</span>
-                                <span class="font-bold text-slate-800">@(AnimalItem.IsPet ? "Yes" : "No")</span>
-                            </div>
-                            <div class="flex justify-between items-center border-t border-orange-100/30 pt-4">
-                                <span class="text-slate-400">Is Tame</span>
-                                <span class="font-bold text-slate-800">@(AnimalItem.IsAnimalTame ? "Yes" : "No")</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                @* بطاقة السجل الصحي *@
-                <div class="vibrant-card p-10 flex-grow shadow-sm">
-                    <h3 class="text-xl font-black text-slate-800 mb-8 flex items-center gap-3">
-                        <i class="fas fa-notes-medical text-orange-600"></i> Health & Medical
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                        @* التطعيمات *@
-                        <div>
-                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Vaccinations</p>
-                            @if (AnimalItem.AnimalVaccination?.Any() == true)
-                            {
-                                <div class="flex flex-wrap gap-2">
-                                    @foreach (var vac in AnimalItem.AnimalVaccination)
-                                    {
-                                        <span class="px-3 py-1 bg-white text-orange-700 rounded-lg text-[11px] font-bold border border-orange-100 shadow-sm">@vac.Vaccination</span>
-                                    }
-                                </div>
-                            }
-                            else
-                            {
-                                <p class="text-xs text-slate-300 italic">No records.</p>
-                            }
-                        </div>
-                        @* العمليات *@
-                        <div>
-                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Surgical Operations</p>
-                            @if (AnimalItem.animalSurgicalOperations?.Any() == true)
-                            {
-                                <div class="space-y-3">
-                                    @foreach (var op in AnimalItem.animalSurgicalOperations)
-                                    {
-                                        <div class="p-3 bg-white/60 rounded-2xl border border-orange-50 shadow-sm">
-                                            <div class="flex justify-between items-center mb-1">
-                                                <span class="font-bold text-slate-800 text-[12px]">@op.SurgicalOperation</span>
-                                                <span class="text-[9px] text-slate-400">@(op.Date?.ToString("yyyy-MM-dd") ?? "No Date")</span>
-                                            </div>
-                                            <p class="text-[10px] font-black uppercase @(op.OperationStatus == "Success" ? "text-green-600" : "text-orange-500")">@op.OperationStatus</p>
-                                        </div>
-                                    }
-                                </div>
-                            }
-                            else
-                            {
-                                <p class="text-xs text-slate-300 italic">No records.</p>
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
-        @* قسم الوصف كامل العرض *@
-        <div class="w-full mb-20 group">
-            <div class="vibrant-card p-12 relative overflow-hidden">
-                <div class="absolute -right-10 -bottom-10 text-orange-500/5 text-[15rem] transform rotate-12 transition-transform duration-1000 group-hover:rotate-0">
-                    <i class="fas fa-paw"></i>
+        @* قسم الوصف بنفس شكل العيادة *@
+        <div class="services-header">
+            <h3 class="services-title">About @AnimalItem?.Name</h3>
+            <div class="services-divider"></div>
+        </div>
+
+        <div style="font-size: 1.2rem; line-height: 1.8; color: var(--alef-gray); max-width: 900px; font-weight: 500;">
+            "@AnimalItem?.Description"
+        </div>
+
+    </div>
+
+    @* المودال *@
+    @if (showProfileModal)
+    {
+        <div class="modal-overlay">
+            <div class="modal-card">
+                <div style="width: 80px; height: 80px; background: #FFF1E6; color: var(--vibrant-orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; font-size: 32px;">
+                    <i class="fas @(isLoggedIn ? "fa-id-card" : "fa-user-lock")"></i>
                 </div>
-                <h3 class="text-2xl font-black text-slate-800 mb-6 flex items-center gap-3">
-                    <i class="fas fa-quote-left text-orange-500 animate-pulse"></i> Full Description
+
+                <h3 style="font-size: 1.8rem; font-weight: 900; color: var(--alef-black); margin-bottom: 15px;">
+                    @(isLoggedIn ? "Complete Your Profile" : "Join Our Family")
                 </h3>
-                <p class="text-slate-500 leading-relaxed font-medium italic text-xl max-w-5xl relative z-10">
-                    "@(string.IsNullOrEmpty(AnimalItem.Description) ? "No description available for this animal yet." : AnimalItem.Description)"
-                </p>
+
+                <p style="color: var(--alef-gray); font-weight: 500; line-height: 1.6; margin-bottom: 35px;">
+                    @(isLoggedIn
+                                    ? "To proceed with the adoption, please add full information in your profile."
+                                    : "Please create an account or sign in to start the adoption process.")
+            </p>
+
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <button @onclick="NavigateToAction" style="background: var(--vibrant-orange); color: white; padding: 18px; border-radius: 1.5rem; font-weight: 800; border: none; cursor: pointer;">
+                        @(isLoggedIn ? "Go to Profile" : "Sign Up / Sign In")
+                    </button>
+                    <button @onclick="() => showProfileModal = false" style="background: #f1f5f9; color: var(--alef-gray); padding: 18px; border-radius: 1.5rem; font-weight: 800; border: none; cursor: pointer;">
+                        Maybe Later
+                    </button>
+                </div>
             </div>
         </div>
-    }
-</main>
+        }
+</div>
