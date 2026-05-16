@@ -1,6 +1,10 @@
 ﻿@namespace ACP.Forms
 @using ACP.Models.Animals
+@using Microsoft.AspNetCore.Components.Forms
+@using ACP.Services
+
 @inject NavigationManager Nav
+@inject AnimalServices AnimalServices
 
 <EditForm Model="animal" OnValidSubmit="HandleSubmit">
     <DataAnnotationsValidator />
@@ -11,8 +15,8 @@
         <div class="text-center space-y-3">
             <h2 class="text-4xl font-bold">
                 @(Mode == AnimalRequestMode.Abandonment
-                    ? "Abandonment Request"
-                    : "Foster Care Request")
+                                ? "Abandonment Request"
+                                : "Foster Care Request")
             </h2>
 
             <p class="text-gray-500">
@@ -33,26 +37,51 @@
 
                 <div class="grid md:grid-cols-2 gap-6">
 
-                    <InputText @bind-Value="animal.Name" placeholder="Name" class="input" />
-                    <InputText @bind-Value="animal.Color" placeholder="Color" class="input" />
+                    <InputText @bind-Value="animal.Name"
+                               placeholder="Name"
+                               class="input" />
 
-                    <InputSelect @bind-Value="animal.Gender" class="input">
-                        <option value="" disabled selected hidden>Gender</option>
+                    <InputText @bind-Value="animal.Color"
+                               placeholder="Color"
+                               class="input" />
+
+                    <InputSelect @bind-Value="animal.Gender"
+                                 class="input">
+
+                        <option value="" disabled selected hidden>
+                            Gender
+                        </option>
+
                         <option>Male</option>
                         <option>Female</option>
+
                     </InputSelect>
 
                     <!-- Age -->
-                    <InputNumber @bind-Value="age" class="input" placeholder="Age (years)" Min="1" />
+                    <InputNumber @bind-Value="age"
+                                 class="input"
+                                 placeholder="Age (years)"
+                                 Min="1" />
 
-                    <InputText @bind-Value="animal.Nationality" placeholder="Nationality" class="input" />
-                    <InputText @bind-Value="animal.PassportNumber" placeholder="Passport" class="input" />
+                    <InputText @bind-Value="animal.PassportNumber"
+                               placeholder="Passport"
+                               class="input" />
 
-                    <InputNumber @bind-Value="animal.animalTypeId" class="input" placeholder="Animal Type" />
-                    <InputNumber @bind-Value="animal.BreedId" class="input" placeholder="Breed" />
+                    <InputNumber @bind-Value="animal.AnimalTypeId"
+                                 class="input"
+                                 placeholder="Animal Type" />
 
-                    <InputText @bind-Value="animal.City" placeholder="City" class="input" />
-                    <InputText @bind-Value="animal.Country" placeholder="Country" class="input" />
+                    <InputText @bind-Value="animal.Breed"
+                               class="input"
+                               placeholder="Breed" />
+
+                    <InputText @bind-Value="animal.City"
+                               placeholder="City"
+                               class="input" />
+
+                    <InputText @bind-Value="animal.Country"
+                               placeholder="Country"
+                               class="input" />
 
                 </div>
 
@@ -63,8 +92,15 @@
 
                 <!-- Image -->
                 <div class="space-y-2">
-                    <label class="text-sm text-gray-600">Upload Animal Image</label>
-                    <InputFile OnChange="HandleImage" class="input" />
+
+                    <label class="text-sm text-gray-600">
+                        Upload Animal Image
+                    </label>
+
+                    <InputFile OnChange="HandleImage"
+                               Multiple
+                               class="input" />
+
                 </div>
 
             </section>
@@ -72,13 +108,17 @@
             <!-- Health -->
             <section class="space-y-6 pt-4">
 
-                <h3 class="text-2xl font-semibold">🩺 Health Information</h3>
+                <h3 class="text-2xl font-semibold">
+                    🩺 Health Information
+                </h3>
 
                 <!-- Vaccination -->
                 <div class="space-y-3">
+
                     <label>Is the animal vaccinated?</label>
 
                     <div class="flex gap-4">
+
                         <button type="button"
                                 class="choice-btn @(isVaccinated == true ? "active" : "")"
                                 @onclick="() => isVaccinated = true">
@@ -90,6 +130,7 @@
                                 @onclick="() => isVaccinated = false">
                             No
                         </button>
+
                     </div>
 
                     @if (isVaccinated == true)
@@ -98,13 +139,16 @@
                                   class="input w-full min-h-[100px]"
                                   placeholder="Enter vaccinations"></textarea>
                     }
+
                 </div>
 
                 <!-- Surgery -->
                 <div class="space-y-3">
+
                     <label>Any surgical operations?</label>
 
                     <div class="flex gap-4">
+
                         <button type="button"
                                 class="choice-btn @(hasSurgery == true ? "active" : "")"
                                 @onclick="() => hasSurgery = true">
@@ -116,6 +160,7 @@
                                 @onclick="() => hasSurgery = false">
                             No
                         </button>
+
                     </div>
 
                     @if (hasSurgery == true)
@@ -124,6 +169,7 @@
                                   class="input w-full min-h-[100px]"
                                   placeholder="Enter surgeries"></textarea>
                     }
+
                 </div>
 
             </section>
@@ -132,11 +178,15 @@
 
         <!-- Submit -->
         <div class="flex justify-center pt-6">
+
             <button type="submit"
                     disabled="@(!IsFormValid())"
                     class="submit-btn">
+
                 Submit Request
+
             </button>
+
         </div>
 
         <!-- Popup -->
@@ -170,10 +220,13 @@
                     <!-- الزر -->
                     <button class="w-full bg-orange-600 text-white py-3 rounded-xl font-semibold hover:bg-orange-700 transition"
                             @onclick="GoHome">
+
                         Back To Home
+
                     </button>
 
                 </div>
+
             </div>
         }
 
@@ -182,9 +235,12 @@
 
 @code {
 
-    private Animal animal = new();
+    private AnimalUpsertFormModel animal = new()
+    {
+        BirthDate = DateTime.Today.AddYears(-1)
+    };
 
-    private int? age;
+    private int? age = 1;
 
     private bool? isVaccinated;
     private string? vaccinationDetails;
@@ -193,6 +249,7 @@
     private string? surgeryDetails;
 
     private bool showPopup = false;
+
     private void GoHome()
     {
         Nav.NavigateTo("/");
@@ -201,30 +258,60 @@
     [Parameter]
     public AnimalRequestMode Mode { get; set; }
 
-    private void HandleSubmit()
+    private async Task HandleSubmit()
     {
-        if (Mode == AnimalRequestMode.Abandonment)
-            Nav.NavigateTo("/confirm-abandonment");
-        else
-            showPopup = true;
+        if (age.HasValue)
+        {
+            animal.BirthDate =
+                DateTime.Today.AddYears(-age.Value);
+        }
+
+        var success =
+            await AnimalServices.AddNewAnimalWithImages(animal);
+
+        if (success)
+        {
+            if (Mode == AnimalRequestMode.Abandonment)
+            {
+                Nav.NavigateTo("/confirm-abandonment");
+            }
+            else
+            {
+                showPopup = true;
+            }
+        }
     }
 
-    private void HandleImage(InputFileChangeEventArgs e) { }
+    private async Task HandleImage(InputFileChangeEventArgs e)
+    {
+        animal.SelectedImages.Clear();
+
+        foreach (var file in e.GetMultipleFiles())
+        {
+            animal.SelectedImages.Add(file);
+        }
+
+        await Task.CompletedTask;
+    }
 
     private bool IsFormValid()
     {
         if (string.IsNullOrWhiteSpace(animal.Name) ||
+            string.IsNullOrWhiteSpace(animal.Description) ||
             string.IsNullOrWhiteSpace(animal.Color) ||
-            string.IsNullOrWhiteSpace(animal.Gender) ||
             string.IsNullOrWhiteSpace(animal.City) ||
             string.IsNullOrWhiteSpace(animal.Country) ||
-            age == null)
+            string.IsNullOrWhiteSpace(animal.Breed) ||
+            age == null ||
+            animal.AnimalTypeId <= 0)
             return false;
 
-        if (isVaccinated == true && string.IsNullOrWhiteSpace(vaccinationDetails))
+        if (isVaccinated == true &&
+            string.IsNullOrWhiteSpace(vaccinationDetails))
             return false;
 
-        if (hasSurgery == true && string.IsNullOrWhiteSpace(surgeryDetails))
+        if (hasSurgery == true &&
+            string.IsNullOrWhiteSpace(surgeryDetails))
             return false;
 
         return true;
