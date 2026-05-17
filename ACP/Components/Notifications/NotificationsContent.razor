@@ -1,0 +1,204 @@
+﻿@namespace ACP.Components.Notifications
+
+<div class="notifications-page animate-fadeIn">
+
+    <!-- Header -->
+    <div class="notifications-header">
+
+        <div>
+
+            <h1>Notifications</h1>
+
+            <p>
+                Stay updated with adoption, foster care,
+                abandonment requests and platform updates.
+            </p>
+
+        </div>
+
+        <div class="unread-badge">
+            @UnreadCount New
+        </div>
+
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+
+        <button class="tab @(SelectedTab == "All" ? "active" : "")"
+                @onclick='() => ChangeTab("All")'>
+            All
+        </button>
+
+        <button class="tab @(SelectedTab == "Adoption" ? "active" : "")"
+                @onclick='() => ChangeTab("Adoption")'>
+            Adoption
+        </button>
+
+        <button class="tab @(SelectedTab == "Foster" ? "active" : "")"
+                @onclick='() => ChangeTab("Foster")'>
+            Foster Care
+        </button>
+
+        <button class="tab @(SelectedTab == "Abandonment" ? "active" : "")"
+                @onclick='() => ChangeTab("Abandonment")'>
+            Abandonment
+        </button>
+
+    </div>
+
+    <!-- Notifications -->
+    <div class="notifications-list">
+
+        @foreach (var item in FilteredNotifications)
+        {
+            <div class="notification-card @(item.IsRead ? "" : "unread")">
+
+                <div class="notification-icon">
+                    @item.Icon
+                </div>
+
+                <div class="notification-content">
+
+                    <div class="top-row">
+
+                        <h3>@item.Title</h3>
+
+                        <span class="time">
+                            @item.Time
+                        </span>
+
+                    </div>
+
+                    <p>
+                        @item.Message
+                    </p>
+
+                    <button class="view-btn"
+                            @onclick="() => OpenPopup(item)">
+                        View Details
+                    </button>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+
+<!-- POPUP -->
+@if (SelectedNotification != null)
+{
+    <div class="popup-overlay">
+
+        <div class="popup-card animate-popup">
+
+            <button class="close-btn"
+                    @onclick="ClosePopup">
+                ✕
+            </button>
+
+            <div class="popup-icon">
+                @SelectedNotification.Icon
+            </div>
+
+            <h2>@SelectedNotification.Title</h2>
+
+            <p class="popup-time">
+                @SelectedNotification.Time
+            </p>
+
+            <p class="popup-message">
+                @SelectedNotification.Message
+            </p>
+
+        </div>
+
+    </div>
+}
+
+@code {
+
+    private string SelectedTab = "All";
+
+    private NotificationItem? SelectedNotification;
+
+    private List<NotificationItem> Notifications = new()
+    {
+        new()
+        {
+            Title = "Adoption Request Approved",
+            Message = "Your adoption request for Luna has been approved successfully.",
+            Time = "2 min ago",
+            Icon = "🐾",
+            IsRead = false,
+            Type = "Adoption"
+        },
+
+        new()
+        {
+            Title = "Foster Care Request Received",
+            Message = "Your foster care request is currently under review.",
+            Time = "10 min ago",
+            Icon = "🏡",
+            IsRead = false,
+            Type = "Foster"
+        },
+
+        new()
+        {
+            Title = "Abandonment Request Submitted",
+            Message = "Your abandonment request has been submitted successfully.",
+            Time = "1 hour ago",
+            Icon = "📩",
+            IsRead = true,
+            Type = "Abandonment"
+        },
+
+        new()
+        {
+            Title = "Platform Update",
+            Message = "New improvements and bug fixes were added to the platform.",
+            Time = "Yesterday",
+            Icon = "✨",
+            IsRead = true,
+            Type = "All"
+        }
+    };
+
+    private IEnumerable<NotificationItem> FilteredNotifications =>
+        SelectedTab == "All"
+        ? Notifications
+        : Notifications.Where(x => x.Type == SelectedTab);
+
+    private int UnreadCount =>
+        Notifications.Count(x => !x.IsRead);
+
+    private void ChangeTab(string tab)
+    {
+        SelectedTab = tab;
+    }
+
+    private void OpenPopup(NotificationItem item)
+    {
+        SelectedNotification = item;
+        item.IsRead = true;
+    }
+
+    private void ClosePopup()
+    {
+        SelectedNotification = null;
+    }
+
+    public class NotificationItem
+    {
+        public string Title { get; set; } = "";
+        public string Message { get; set; } = "";
+        public string Time { get; set; } = "";
+        public string Icon { get; set; } = "";
+        public bool IsRead { get; set; }
+        public string Type { get; set; } = "";
+    }
+}
