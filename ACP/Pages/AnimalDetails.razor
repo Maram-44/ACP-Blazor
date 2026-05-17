@@ -18,12 +18,11 @@
         background: radial-gradient(circle at top right, #FFE7D1 0%, transparent 35%), radial-gradient(circle at bottom left, #FFF1E6 0%, transparent 30%), linear-gradient(to bottom, #FFFBF8, #FFFFFF);
     }
 
-    /* موازاة الصورة مع الكلام */
     .main-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 60px;
-        align-items: start; /* يبدأون من نفس السطر */
+        align-items: start;
     }
 
     .image-frame {
@@ -89,7 +88,6 @@
         color: var(--alef-black);
     }
 
-    /* ستايل الوصف مثل العيادة تماماً */
     .services-header {
         display: flex;
         align-items: center;
@@ -131,7 +129,6 @@
             transform: translateY(-5px);
         }
 
-    /* Modal المحاذاة والضباب */
     .modal-overlay {
         position: fixed;
         inset: 0;
@@ -147,14 +144,75 @@
     .modal-card {
         background: white;
         width: 100%;
-        max-width: 450px;
+        max-width: 500px;
         border-radius: 3rem;
         padding: 50px 40px;
         text-align: center;
         box-shadow: 0 30px 60px rgba(0,0,0,0.2);
     }
 
-    /* Responsive */
+    .modal-textarea {
+        width: 100%;
+        min-height: 120px;
+        border: 2px solid #f1f5f9;
+        border-radius: 1.5rem;
+        padding: 15px;
+        font-family: inherit;
+        font-size: 1rem;
+        color: var(--alef-black);
+        outline: none;
+        resize: none;
+        transition: border-color 0.3s;
+        box-sizing: border-box;
+    }
+
+        .modal-textarea:focus {
+            border-color: var(--vibrant-orange);
+        }
+
+    .terms-box {
+        background: #FFF7ED;
+        padding: 18px;
+        border-radius: 1.5rem;
+        margin: 20px 0 30px 0;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    /* تصميم أنيق للمؤشر المتحرك (Spinner) */
+    .spinner-loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid var(--vibrant-orange);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes scaleUp {
+        0% {
+            transform: scale(0.5);
+            opacity: 0;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
     @@media (max-width: 1024px) {
         .main-grid {
             grid-template-columns: 1fr;
@@ -167,78 +225,99 @@
 </style>
 
 <div class="animal-app-wrapper">
-    <div class="main-content-layout">
 
-        <div class="main-grid">
-
-            <div class="order-2 lg:order-1">
-                <div class="image-frame">
-                    @if (AnimalItem?.ImagePaths != null && AnimalItem.ImagePaths.Any())
-                    {
-                        <img src="@AnimalItem.ImagePaths[currentImageIndex]" />
-                    }
-                    <div class="absolute bottom-8 w-full flex justify-center gap-4">
-                        <button @onclick="PrevImg" class="w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center text-slate-800 hover:bg-orange-600 hover:text-white transition-all border-none cursor-pointer">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <button @onclick="NextImg" class="w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center text-slate-800 hover:bg-orange-600 hover:text-white transition-all border-none cursor-pointer">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
+    @if (isLoading)
+    {
+        @* شاشة التحميل الاحترافية الذكية المضافة لرفع جودة تجربة المستخدم (UX) *@
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 500px; text-align: center;">
+            <div class="spinner-loader"></div>
+            <h4 style="margin-top: 25px; color: var(--alef-black); font-weight: 800; letter-spacing: -0.5px;">Loading Pet Details...</h4>
+            <p style="color: var(--alef-gray); font-weight: 500; font-size: 0.95rem;">Fetching the best profile for your future friend.</p>
+        </div>
+    }
+    else if (AnimalItem == null)
+    {
+        @* رسالة أمان أنيقة في حال عدم توفر البيانات من الـ API *@
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 500px; text-align: center; padding: 0 20px;">
+            <div style="width: 80px; height: 80px; background: #FEF2F2; color: #EF4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 20px;">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <h4 style="color: var(--alef-black); font-weight: 800;">Animal Profile Unavailable</h4>
+            <p style="color: var(--alef-gray); max-width: 400px; font-weight: 500; line-height: 1.6;">We couldn't retrieve the data for this pet right now. Please check your connections or try again later.</p>
+        </div>
+    }
+    else
+    {
+        @* كود التصميم الفخم الخاص بكِ يُعرض هنا بسلاسة بمجرد اكتمال الـ Loading *@
+        <div class="main-content-layout">
+            <div class="main-grid">
+                <div class="order-2 lg:order-1">
+                    <div class="image-frame">
+                        @if (AnimalItem?.ImagePaths != null && AnimalItem.ImagePaths.Any())
+                        {
+                            <img src="@AnimalItem.ImagePaths[currentImageIndex]" />
+                        }
+                        <div class="absolute bottom-8 w-full flex justify-center gap-4">
+                            <button @onclick="PrevImg" class="w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center text-slate-800 hover:bg-orange-600 hover:text-white transition-all border-none cursor-pointer">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button @onclick="NextImg" class="w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center text-slate-800 hover:bg-orange-600 hover:text-white transition-all border-none cursor-pointer">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="order-1 lg:order-2">
-                <div class="pet-profile-label" style="font-weight: 900; color: var(--vibrant-orange); font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px;">
-                    <div class="w-10 h-[3px] bg-orange-600 rounded-full"></div>
-                    Pet Profile
-                </div>
+                <div class="order-1 lg:order-2">
+                    <div class="pet-profile-label" style="font-weight: 900; color: var(--vibrant-orange); font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px;">
+                        <div class="w-10 h-[3px] bg-orange-600 rounded-full"></div>
+                        Pet Profile
+                    </div>
 
-                <div class="hero-title">
-                    <div class="line-welcome">Meet Your Friend</div>
-                    <div class="line-petname">@AnimalItem?.Name</div>
-                    <div class="line-breed">@AnimalItem?.AnimalType • @AnimalItem?.Breed</div>
-                </div>
+                    <div class="hero-title">
+                        <div class="line-welcome">Meet Your Friend</div>
+                        <div class="line-petname">@AnimalItem?.Name</div>
+                        <div class="line-breed">@AnimalItem?.AnimalType • @AnimalItem?.Breed</div>
+                    </div>
 
-                <div class="info-boxes-grid">
-                    <div><span class="info-tag">Gender</span><span class="info-text">@AnimalItem?.Gender</span></div>
-                    <div><span class="info-tag">Age</span><span class="info-text">@CalculateAge(AnimalItem.BirthDate)</span></div>
-                    <div><span class="info-tag">Color</span><span class="info-text">@AnimalItem?.Color</span></div>
-                    <div><span class="info-tag">Current Status</span><span class="info-text text-orange-600">@AnimalItem?.Status</span></div>
-                    <div><span class="info-tag">City</span><span class="info-text">@AnimalItem?.City</span></div>
-                    <div><span class="info-tag">Country</span><span class="info-text">@AnimalItem?.Country</span></div>
+                    <div class="info-boxes-grid">
+                        <div><span class="info-tag">Gender</span><span class="info-text">@AnimalItem?.Gender</span></div>
+                        <div><span class="info-tag">Age</span><span class="info-text">@CalculateAge(AnimalItem.BirthDate)</span></div>
+                        <div><span class="info-tag">Color</span><span class="info-text">@AnimalItem?.Color</span></div>
+                        <div><span class="info-tag">Current Status</span><span class="info-text text-orange-600">@AnimalItem?.Status</span></div>
+                        <div><span class="info-tag">City</span><span class="info-text">@AnimalItem?.City</span></div>
+                        <div><span class="info-tag">Country</span><span class="info-text">@AnimalItem?.Country</span></div>
 
-                    @if (AnimalItem.Status?.Contains("Foster", StringComparison.OrdinalIgnoreCase) == true && AnimalItem.ReturnDate.HasValue)
-                    {
-                        <div style="grid-column: span 2; background: #FFF7ED; padding: 20px; border-radius: 20px; border: 1px dashed var(--vibrant-orange); display: flex; align-items: center; gap: 15px;">
-                            <i class="fas fa-calendar-alt text-orange-600 text-xl"></i>
-                            <div>
-                                <span class="info-tag">Available Until</span>
-                                <span class="info-text">@AnimalItem.ReturnDate.Value.ToString("MMMM dd, yyyy")</span>
+                        @if (AnimalItem?.Status?.Contains("Foster", StringComparison.OrdinalIgnoreCase) == true && AnimalItem.ReturnDate.HasValue)
+                        {
+                            <div style="grid-column: span 2; background: #FFF7ED; padding: 20px; border-radius: 20px; border: 1px dashed var(--vibrant-orange); display: flex; align-items: center; gap: 15px;">
+                                <i class="fas fa-calendar-alt text-orange-600 text-xl"></i>
+                                <div>
+                                    <span class="info-tag">Available Until</span>
+                                    <span class="info-text">@AnimalItem.ReturnDate.Value.ToString("MMMM dd, yyyy")</span>
+                                </div>
                             </div>
-                        </div>
-                    }
-                </div>
+                        }
+                    </div>
 
-                <button @onclick="HandleAdoptionClick" class="adopt-action-btn">
-                    Request To Take @AnimalItem?.Name Home
-                </button>
+                    <button @onclick="HandleAdoptionClick" class="adopt-action-btn">
+                        Request To Take @AnimalItem?.Name Home
+                    </button>
+                </div>
+            </div>
+
+            <div class="services-header">
+                <h3 class="services-title">About @AnimalItem?.Name</h3>
+                <div class="services-divider"></div>
+            </div>
+
+            <div style="font-size: 1.2rem; line-height: 1.8; color: var(--alef-gray); max-width: 900px; font-weight: 500;">
+                "@AnimalItem?.Description"
             </div>
         </div>
+    }
 
-        @* قسم الوصف بنفس شكل العيادة *@
-        <div class="services-header">
-            <h3 class="services-title">About @AnimalItem?.Name</h3>
-            <div class="services-divider"></div>
-        </div>
-
-        <div style="font-size: 1.2rem; line-height: 1.8; color: var(--alef-gray); max-width: 900px; font-weight: 500;">
-            "@AnimalItem?.Description"
-        </div>
-
-    </div>
-
-    @* المودال *@
+    @* 1. مودال التحقق من الحساب والبروفايل *@
     @if (showProfileModal)
     {
         <div class="modal-overlay">
@@ -252,10 +331,8 @@
                 </h3>
 
                 <p style="color: var(--alef-gray); font-weight: 500; line-height: 1.6; margin-bottom: 35px;">
-                    @(isLoggedIn
-                                    ? "To proceed with the adoption, please add full information in your profile."
-                                    : "Please create an account or sign in to start the adoption process.")
-            </p>
+                    @(isLoggedIn ? "To proceed with the adoption, please add full information in your profile." : "Please create an account or sign in to start the adoption process.")
+                </p>
 
                 <div style="display: flex; flex-direction: column; gap: 12px;">
                     <button @onclick="NavigateToAction" style="background: var(--vibrant-orange); color: white; padding: 18px; border-radius: 1.5rem; font-weight: 800; border: none; cursor: pointer;">
@@ -267,5 +344,68 @@
                 </div>
             </div>
         </div>
-        }
+    }
+
+    @* 2. بوب اب كتابة سبب الطلب والموافقة *@
+    @if (showRequestFormModal)
+    {
+        <div class="modal-overlay">
+            <div class="modal-card" style="max-width: 550px;">
+                <div style="width: 70px; height: 70px; background: #FFF1E6; color: var(--vibrant-orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 28px;">
+                    <i class="fas fa-file-signature"></i>
+                </div>
+
+                <h3 style="font-size: 1.8rem; font-weight: 900; color: var(--alef-black); margin-bottom: 10px;">
+                    @requestType Request
+                </h3>
+                <p style="color: var(--alef-gray); margin-bottom: 25px; font-size: 0.95rem;">
+                    You are requesting to take <b>@AnimalItem?.Name</b> home. Please provide your reason.
+                </p>
+
+                <div style="text-align: left; margin-bottom: 5px;">
+                    <label style="display:block; font-weight:800; margin-bottom:8px; color:var(--alef-black); font-size: 0.9rem;">Why do you want to adopt/foster this pet?</label>
+                    <textarea @bind="requestReason" class="modal-textarea" placeholder="Please write your reasons or adoption notes here..."></textarea>
+                </div>
+
+                <div class="terms-box">
+                    <input type="checkbox" @bind="isTermsAccepted" id="termsCheck" style="width: 20px; height: 20px; accent-color: var(--vibrant-orange); cursor: pointer; margin-top:2px;" />
+                    <label for="termsCheck" style="font-size: 0.85rem; color: var(--alef-black); font-weight: 600; cursor: pointer; text-align:left; line-height:1.4;">
+                        I agree to the adoption terms and conditions, and I promise to provide a safe and loving environment.
+                    </label>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <button @onclick="SubmitFinalRequest" style="background: var(--vibrant-orange); color: white; padding: 16px; border-radius: 1.2rem; font-weight: 800; border: none; cursor: pointer;">
+                        Submit Request
+                    </button>
+                    <button @onclick="() => showRequestFormModal = false" style="background: #f1f5f9; color: var(--alef-gray); padding: 16px; border-radius: 1.2rem; font-weight: 800; border: none; cursor: pointer;">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
+    @* 3. بوب اب النجاح الأنيق الأخضر المخصص *@
+    @if (showSuccessModal)
+    {
+        <div class="modal-overlay">
+            <div class="modal-card" style="max-width: 420px; padding: 45px 30px;">
+                <div style="width: 80px; height: 80px; background: #F0FDF4; color: #16A34A; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 40px; animation: scaleUp 0.4s ease-out;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+
+                <h3 style="font-size: 1.7rem; font-weight: 900; color: var(--alef-black); margin-bottom: 10px;">
+                    Success!
+                </h3>
+                <p style="color: var(--alef-gray); font-size: 0.95rem; line-height: 1.6; margin-bottom: 30px;">
+                    Your @requestType request for <b>@AnimalItem?.Name</b> has been submitted successfully to our team.
+                </p>
+
+                <button @onclick="() => showSuccessModal = false" style="width: 100%; background: #16A34A; color: white; padding: 16px; border-radius: 1.2rem; font-weight: 800; border: none; cursor: pointer; font-size: 1rem; transition: background 0.2s;">
+                    Awesome!
+                </button>
+            </div>
+        </div>
+    }
 </div>

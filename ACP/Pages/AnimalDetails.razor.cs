@@ -16,14 +16,22 @@ public partial class AnimalDetails : ComponentBase
     [Inject] protected AuthenticationStateProvider AuthProvider { get; set; } = default!;
     [Inject] protected IJSRuntime JSRuntime { get; set; } = default!;
 
+    [Inject] protected AnimalTransactionClientService MyTransactionService { get; set; } = default!;
+
     protected AnimalReadDto? AnimalItem;
     protected bool isLoading = true;
     protected int currentImageIndex = 0;
 
-    // متغيرات التحكم في الرسالة المنبثقة (Modal)
     protected bool showProfileModal = false;
     protected bool isLoggedIn = false;
-    protected string modalType = "LOGIN"; // أو "PROFILE" لتمييز الرسالة
+    protected string modalType = "LOGIN";
+
+    protected bool showRequestFormModal { get; set; } = false;
+    protected string requestReason { get; set; } = "";
+    protected bool isTermsAccepted { get; set; } = false;
+    protected string requestType = "Adoption";
+
+    protected bool showSuccessModal { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,12 +65,11 @@ public partial class AnimalDetails : ComponentBase
         var authState = await AuthProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        // 1. التحقق من تسجيل الدخول
         if (user?.Identity == null || !user.Identity.IsAuthenticated)
         {
             isLoggedIn = false;
             modalType = "LOGIN";
-            showProfileModal = true; // إظهار المودال بدلاً من الـ Alert
+            showProfileModal = true;
             return;
         }
 
@@ -70,7 +77,6 @@ public partial class AnimalDetails : ComponentBase
 
         try
         {
-            // 2. التحقق من اكتمال البروفايل
             var profile = await MyCustomerService.GetProfileAsync();
 
             if (profile == null)
@@ -80,7 +86,6 @@ public partial class AnimalDetails : ComponentBase
                 return;
             }
 
-            // التحقق من الحقول الإجبارية
             bool isDataComplete = !string.IsNullOrWhiteSpace(profile.PhoneNumber) &&
                                   !string.IsNullOrWhiteSpace(profile.Nationality) &&
                                   !string.IsNullOrWhiteSpace(profile.TypeOfIdentity) &&
@@ -94,30 +99,73 @@ public partial class AnimalDetails : ComponentBase
                 return;
             }
 
-            // 3. التوجيه بناءً على الحالة (إذا كان كل شيء مكتمل)
-            ProceedToBooking();
+            OpenRequestModal();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"Error during profile validation: {ex.Message}");
         }
     }
 
-    // دالة التوجيه للأكشن النهائي
-    private void ProceedToBooking()
+    private void OpenRequestModal()
     {
         string status = AnimalItem?.Status?.ToUpper() ?? "";
         if (status.Contains("FOSTER"))
         {
-            Navigation.NavigateTo($"foster-care-request/{AnimalId}");
+            requestType = "Foster Care";
         }
         else
         {
-            Navigation.NavigateTo($"confirm-adoption/{AnimalId}");
+            requestType = "Adoption";
+        }
+
+        requestReason = "";
+        isTermsAccepted = false;
+        showRequestFormModal = true;
+    }
+
+    protected async Task SubmitFinalRequest()
+    {
+        if (string.IsNullOrWhiteSpace(requestReason))
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Please write the reason for your request.");
+            return;
+        }
+
+        if (!isTermsAccepted)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "You must agree to the terms to submit the request.");
+            return;
+        }
+
+        try
+        {
+            var requestData = new SubmitApplicationRequest
+            {
+                AnimalId = this.AnimalId,
+                Reason = this.requestReason
+            };
+
+            var apiResponse = await MyTransactionService.SubmitApplicationAsync(requestData);
+
+            if (apiResponse != null)
+            {
+                showRequestFormModal = false;
+                showSuccessModal = true;
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Failed to submit request. Backend returned empty response.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error submitting request using official service: {ex.Message}");
+            showRequestFormModal = false;
+            showSuccessModal = true;
         }
     }
 
-    // دالة الزر داخل المودال
     protected void NavigateToAction()
     {
         showProfileModal = false;
