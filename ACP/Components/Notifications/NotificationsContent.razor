@@ -11,7 +11,7 @@
 
             <p>
                 Stay updated with adoption, foster care,
-                abandonment requests and platform updates.
+                Rehoming requests and platform updates.
             </p>
 
         </div>
@@ -42,7 +42,7 @@
 
         <button class="tab @(SelectedTab == "Abandonment" ? "active" : "")"
                 @onclick='() => ChangeTab("Abandonment")'>
-            Abandonment
+            Rehoming
         </button>
 
     </div>
@@ -149,8 +149,8 @@
 
         new()
         {
-            Title = "Abandonment Request Submitted",
-            Message = "Your abandonment request has been submitted successfully.",
+            Title = "Rehoming Request Submitted",
+            Message = "Your Rehoming request has been submitted successfully.",
             Time = "1 hour ago",
             Icon = "📩",
             IsRead = true,
