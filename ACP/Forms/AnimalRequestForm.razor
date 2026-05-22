@@ -48,7 +48,7 @@
                     <InputSelect @bind-Value="animal.Gender"
                                  class="input">
 
-                        <option value="" disabled selected hidden>
+                        <option value="">
                             Select Gender
                         </option>
 
@@ -65,19 +65,21 @@
                                placeholder="Passport Number *"
                                class="input" />
 
-                    <InputSelect @bind-Value="animal.AnimalTypeId"
-                                 class="input">
+                        <InputSelect @bind-Value="animal.AnimalTypeId"
+                                     class="input">
 
-                        <option value="0" disabled selected hidden>
-                            Select Animal Type
-                        </option>
+                            <option value="0">
+                                Select Animal Type
+                            </option>
 
-                        <option value="1">Cat</option>
-                        <option value="2">Dog</option>
-                        <option value="3">Bird</option>
-                        <option value="4">Rabbit</option>
+                            @foreach (var type in animalTypes)
+                            {
+                                <option value="@type.TypeId">
+                                    @type.TypeName
+                                </option>
+                            }
 
-                    </InputSelect>
+                        </InputSelect>
 
                     <InputText @bind-Value="animal.Breed"
                                class="input"
@@ -251,6 +253,15 @@
 
 @code {
 
+    private List<AnimalType> animalTypes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        animalTypes =
+            await AnimalServices.GetAnimalTypes()
+            ?? new List<AnimalType>();
+    }
+
     private AnimalUpsertFormModel animal = new()
     {
         BirthDate = DateTime.Today.AddYears(-1)
@@ -329,4 +340,6 @@
         Abandonment,
         FosterCare
     }
+
+    
 }
