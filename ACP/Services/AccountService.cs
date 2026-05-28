@@ -74,5 +74,39 @@ namespace ACP.Services
             // في حال فشل الاتصال، نفترض أنه غير متاح للحماية
             return false;
         }
+
+        public async Task<bool> SendForgotPasswordLinkAsync(string email)
+        {
+            // إنشاء كائن الطلب ليتطابق مع الـ DTO المتوقع في الباكند
+            var request = new { Email = email };
+
+            // استدعاء الـ Endpoint الخاصة بك
+            var response = await _httpClient.PostAsJsonAsync("api/account/forgot-password", request);
+
+            // نرجع true إذا كان كود الحالة 200 OK (حتى لو لم يكن الإيميل مسجلاً لأسباب أمنية كما ذكرت)
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<ResetPasswordResponseDto> ResetPasswordAsync(object resetPasswordData)
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/account/reset-password", resetPasswordData);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return new ResetPasswordResponseDto { IsSuccess = true };
+            }
+
+            // قراءة الأخطاء في حال فشل الطلب
+            var errorResult = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return new ResetPasswordResponseDto
+            {
+                IsSuccess = false,
+                Errors = errorResult?.Errors ?? new List<string> { "An error occurred. Please try again." }
+            };
+        }
+
+        // كلاسات مساعدة لنقل البيانات وتلقي الأخطاء
+        public class ResetPasswordResponseDto { public bool IsSuccess { get; set; } public List<string>? Errors { get; set; } }
+        public class ErrorResponse { public List<string> Errors { get; set; } = new(); }
     }
 }

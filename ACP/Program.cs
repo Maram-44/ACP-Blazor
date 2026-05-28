@@ -72,6 +72,11 @@ builder.Services.AddHttpClient<AnimalTransactionClientService>((sp, client) =>
     client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
 }).AddHttpMessageHandler<JwtHandler>();
 
+builder.Services.AddHttpClient <BlogHttpService>((sp, client) =>
+{
+    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
+}).AddHttpMessageHandler<JwtHandler>();
+
 builder.Services.AddAuthorizationCore();
 
 //builder.Services.AddAuthorizationCore(options =>

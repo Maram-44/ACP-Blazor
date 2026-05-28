@@ -1,4 +1,8 @@
 ﻿@namespace ACP.Components.Notifications
+@using ACP.Models.Account
+@using ACP.Services
+
+@inject NotificationClientService NotificationService
 
 <div class="notifications-page animate-fadeIn">
 
@@ -11,7 +15,7 @@
 
             <p>
                 Stay updated with adoption, foster care,
-                abandonment requests and platform updates.
+                rehoming requests and platform updates.
             </p>
 
         </div>
@@ -30,19 +34,14 @@
             All
         </button>
 
-        <button class="tab @(SelectedTab == "Adoption" ? "active" : "")"
-                @onclick='() => ChangeTab("Adoption")'>
-            Adoption
+        <button class="tab @(SelectedTab == "Read" ? "active" : "")"
+                @onclick='() => ChangeTab("Read")'>
+            Read
         </button>
 
-        <button class="tab @(SelectedTab == "Foster" ? "active" : "")"
-                @onclick='() => ChangeTab("Foster")'>
-            Foster Care
-        </button>
-
-        <button class="tab @(SelectedTab == "Abandonment" ? "active" : "")"
-                @onclick='() => ChangeTab("Abandonment")'>
-            Abandonment
+        <button class="tab @(SelectedTab == "Unread" ? "active" : "")"
+                @onclick='() => ChangeTab("Unread")'>
+            Unread
         </button>
 
     </div>
@@ -55,7 +54,7 @@
             <div class="notification-card @(item.IsRead ? "" : "unread")">
 
                 <div class="notification-icon">
-                    @item.Icon
+                    🔔
                 </div>
 
                 <div class="notification-content">
@@ -65,7 +64,7 @@
                         <h3>@item.Title</h3>
 
                         <span class="time">
-                            @item.Time
+                            @item.CreatedAt.ToString("dd MMM yyyy")
                         </span>
 
                     </div>
@@ -101,13 +100,13 @@
             </button>
 
             <div class="popup-icon">
-                @SelectedNotification.Icon
+                🔔
             </div>
 
             <h2>@SelectedNotification.Title</h2>
 
             <p class="popup-time">
-                @SelectedNotification.Time
+                @SelectedNotification.CreatedAt.ToString("f")
             </p>
 
             <p class="popup-message">
@@ -123,55 +122,33 @@
 
     private string SelectedTab = "All";
 
-    private NotificationItem? SelectedNotification;
+    private Notification? SelectedNotification;
 
-    private List<NotificationItem> Notifications = new()
+    private List<Notification> Notifications = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        new()
-        {
-            Title = "Adoption Request Approved",
-            Message = "Your adoption request for Luna has been approved successfully.",
-            Time = "2 min ago",
-            Icon = "🐾",
-            IsRead = false,
-            Type = "Adoption"
-        },
+        await NotificationService.InitializeAsync();
 
-        new()
-        {
-            Title = "Foster Care Request Received",
-            Message = "Your foster care request is currently under review.",
-            Time = "10 min ago",
-            Icon = "🏡",
-            IsRead = false,
-            Type = "Foster"
-        },
+        Notifications = NotificationService.Notifications;
 
-        new()
-        {
-            Title = "Abandonment Request Submitted",
-            Message = "Your abandonment request has been submitted successfully.",
-            Time = "1 hour ago",
-            Icon = "📩",
-            IsRead = true,
-            Type = "Abandonment"
-        },
+        NotificationService.OnNotificationsChanged += RefreshUI;
+    }
 
-        new()
-        {
-            Title = "Platform Update",
-            Message = "New improvements and bug fixes were added to the platform.",
-            Time = "Yesterday",
-            Icon = "✨",
-            IsRead = true,
-            Type = "All"
-        }
-    };
+    private void RefreshUI()
+    {
+        Notifications = NotificationService.Notifications;
 
-    private IEnumerable<NotificationItem> FilteredNotifications =>
-        SelectedTab == "All"
-        ? Notifications
-        : Notifications.Where(x => x.Type == SelectedTab);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private IEnumerable<Notification> FilteredNotifications =>
+        SelectedTab switch
+        {
+            "Read" => Notifications.Where(x => x.IsRead),
+            "Unread" => Notifications.Where(x => !x.IsRead),
+            _ => Notifications
+        };
 
     private int UnreadCount =>
         Notifications.Count(x => !x.IsRead);
@@ -181,24 +158,18 @@
         SelectedTab = tab;
     }
 
-    private void OpenPopup(NotificationItem item)
+    private async Task OpenPopup(Notification item)
     {
         SelectedNotification = item;
-        item.IsRead = true;
+
+        if (!item.IsRead && item.Id.HasValue)
+        {
+            await NotificationService.MarkAsReadAsync(item.Id.Value);
+        }
     }
 
     private void ClosePopup()
     {
         SelectedNotification = null;
-    }
-
-    public class NotificationItem
-    {
-        public string Title { get; set; } = "";
-        public string Message { get; set; } = "";
-        public string Time { get; set; } = "";
-        public string Icon { get; set; } = "";
-        public bool IsRead { get; set; }
-        public string Type { get; set; } = "";
     }
 }
