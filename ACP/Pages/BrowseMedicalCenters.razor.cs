@@ -1,14 +1,17 @@
 ﻿using Microsoft.AspNetCore.Components;
 using ACP.Models.MedicalCenters; // الموديل الحقيقي من الباك آند
-using ACP.Services;             // الخدمة الحقيقية
+using ACP.Services;              // الخدمة الحقيقية
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ACP.Pages;
 
-public partial class BrowseMedicalCenters
+public partial class BrowseMedicalCenters : ComponentBase
 {
-    // حقن الخدمة التي برمجها زميلك
+    // حقن الخدمة الحقيقية للباك آند
     [Inject] private ACP.Services.MedicalCenterService MedicalService { get; set; } = default!;
-    [Inject] private NavigationManager Navigation { get; set; } = default!;
 
     private List<MedicalCenter> CentersList = new();
     private List<MedicalCenter> FilteredCenters = new();
@@ -16,17 +19,17 @@ public partial class BrowseMedicalCenters
     private bool IsLoading = true;
 
     private string selectedCity = "all";
-    private string selectedService = "all";
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             IsLoading = true;
-            // استدعاء البيانات الحقيقية من الـ API
+
+            // جلب البيانات الحقيقية من السيرفر
             CentersList = await MedicalService.GetAll();
 
-            // استخراج المدن المتوفرة ديناميكياً من البيانات
+            // استخراج المدن المتوفرة ديناميكياً لتغذية الفلتر
             AvailableCities = CentersList
                 .Where(c => !string.IsNullOrEmpty(c.City))
                 .Select(c => c.City)
@@ -37,7 +40,6 @@ public partial class BrowseMedicalCenters
         }
         catch (Exception ex)
         {
-            // يمكنك إضافة نظام تنبيه هنا في حال فشل السيرفر
             Console.WriteLine($"Error fetching medical centers: {ex.Message}");
         }
         finally
@@ -46,36 +48,37 @@ public partial class BrowseMedicalCenters
         }
     }
 
+    // 🔹 الفلترة أصبحت مقتصرة على المدينة فقط بناءً على رغبتكِ
     private void ApplyFilter()
     {
-        FilteredCenters = CentersList.Where(c =>
-            // 1. فلترة المدينة
-            (selectedCity == "all" || c.City == selectedCity) &&
+        if (CentersList == null) return;
 
-            // 2. فلترة الخدمة (نبحث داخل قائمة الخدمات التابعة للمركز)
-            (selectedService == "all" || (c.medicalCenterServices != null &&
-             c.medicalCenterServices.Any(s => s.ServiceName.Contains(selectedService, StringComparison.OrdinalIgnoreCase))))
-        ).ToList();
+        // البدء دائماً بالقائمة الكاملة المجلوبة من الباك إند
+        var query = CentersList.AsEnumerable();
 
+        // الفلترة حسب المدينة (إذا تم اختيار مدينة معينة)
+        if (!string.IsNullOrEmpty(selectedCity) && selectedCity != "all")
+        {
+            query = query.Where(c => c.City != null && c.City.Equals(selectedCity, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // تحديث القائمة المعروضة على الشاشة
+        FilteredCenters = query.ToList();
+
+        // إجبار واجهة Blazor على إعادة الرسم الفوري
         StateHasChanged();
     }
 
     private void HandleFilterChanged((string city, string service) filter)
     {
+        // نستقبل المدينة فقط ونمررها، ونتجاهل الخدمات
         selectedCity = filter.city;
-        selectedService = filter.service;
         ApplyFilter();
     }
 
     private void ResetFilters()
     {
         selectedCity = "all";
-        selectedService = "all";
         ApplyFilter();
-    }
-
-    private void NavigateToDetails(int id)
-    {
-        Navigation.NavigateTo($"/medical-center-details/{id}");
     }
 }
