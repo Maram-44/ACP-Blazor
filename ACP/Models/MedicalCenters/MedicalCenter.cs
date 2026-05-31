@@ -11,7 +11,7 @@ namespace ACP.Models.MedicalCenters
         public string Street { get; set; } = null!;
         public string Phone { get; set; } = null!;
         public string Email { get; set; } = null!;
-        public bool IsDirectBooking { get; set; }
+        public string ImagePath { get; set; } = null!;
         public ICollection<MedicalCenterService>? medicalCenterServices { get; set; }
     }
 }
