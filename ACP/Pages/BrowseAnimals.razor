@@ -2,13 +2,16 @@
 @namespace ACP.Pages
 @using ACP.Models.Animals
 @using ACP.Components.BrowseAnimals
+@inject NavigationManager NavigationManager
+@inject ACP.Services.AnimalServices AnimalServices
 
 <div class="bg-[#F8FAFC] min-h-screen relative">
 
     @* 1. Hero Section *@
     <AnimalHero>
+        @* حل مشكلة التحويل: قمنا بتمرير قيمة رقمية صريحة (0 في حال كان الـ ID فارغاً) ليتوافق مع بروبيرتي المكون *@
         <AnimalFilter SearchText="@searchText"
-                      SelectedTypeId="@selectedTypeId"
+                      SelectedTypeId="@(selectedTypeId ?? 0)"
                       SelectedAgeRange="@selectedAgeRange"
                       OnSearchChanged="HandleSearch"
                       OnTypeChanged="HandleTypeChange"
@@ -22,14 +25,13 @@
         <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-4">
             <h3 class="text-3xl font-black text-slate-800 tracking-tight">Available Pets</h3>
             <span class="bg-white shadow-md text-slate-700 px-6 py-2 rounded-full font-bold border border-slate-100 text-sm">
-                Found: <span class="text-[#EA580C]">@(FilteredAnimals?.Count() ?? 0)</span> Results
+                Loaded: <span class="text-[#EA580C]">@(AnimalsList?.Count ?? 0)</span> Pets
             </span>
         </div>
 
         @* Data Rendering Logic *@
         @if (AnimalsList == null)
         {
-            @* Loading State *@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 @for (int i = 0; i < 4; i++)
                 {
@@ -40,9 +42,8 @@
                 <p class="text-slate-500 font-medium">Fetching pets data...</p>
             </div>
         }
-        else if (!FilteredAnimals.Any())
+        else if (!AnimalsList.Any())
         {
-            @* No results state *@
             <div class="text-center py-20 bg-white rounded-[3rem] shadow-sm border border-slate-100">
                 <div class="mb-4 text-slate-200">
                     <i class="fas fa-search fa-4x"></i>
@@ -59,28 +60,45 @@
         {
             @* Animals Grid *@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                @foreach (var animal in FilteredAnimals.Take(currentPageSize))
+                @foreach (var animal in AnimalsList)
                 {
                     <AnimalCard AnimalItem="animal" OnViewProfile="HandleViewAnimalProfile" />
                 }
             </div>
 
-            @* 3. Load More Section *@
-            @if (FilteredAnimals.Count() > currentPageSize)
+            @* 3. Infinite Scroll / Load More Trigger via Alpine.js *@
+            @if (hasNextPage)
             {
-                <div class="flex flex-col items-center justify-center mt-20 mb-10">
-                    <p class="text-slate-400 text-sm mb-4 font-medium italic">
-                        Showing @(FilteredAnimals.Take(currentPageSize).Count()) of @FilteredAnimals.Count() pets
-                    </p>
+                <div x-data="{
+                     observer: null,
+                     init() {
+                     setTimeout(()=>
+                    {
+                    this.observer = new IntersectionObserver(entries => {
+                    if (entries[0].isIntersecting && !@isLoadingMore.ToString().ToLower()) {
+                    @(() => LoadMore())
+                    }
+                    }, { rootMargin: '100px' });
 
-                    <button @onclick="LoadMore"
-                            class="group relative px-12 py-4 bg-white border-2 border-slate-200 text-slate-700 font-black rounded-2xl overflow-hidden transition-all hover:text-white hover:border-[#EA580C] shadow-lg shadow-slate-200/50">
-                        <div class="absolute inset-0 w-0 bg-[#EA580C] transition-all duration-300 ease-out group-hover:w-full"></div>
-                        <span class="relative z-10 flex items-center gap-2">
-                            View More Animals
-                            <i class="fas fa-plus group-hover:rotate-90 transition-transform duration-300"></i>
-                        </span>
-                    </button>
+                    this.observer.observe(this.$el);
+                    }, 300);
+                    },
+                    destroy() {
+                    if(this.observer) this.observer.disconnect();
+                    }
+                    }"
+                    class="flex flex-col items-center justify-center mt-16 mb-10 text-slate-400 font-medium italic">
+
+                    <div class="flex items-center gap-3 bg-white px-6 py-3 rounded-full shadow-sm border border-slate-100">
+                        <div class="w-5 h-5 border-2 border-[#EA580C] border-t-transparent rounded-full animate-spin"></div>
+                        <span>Loading more awesome pets...</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-slate-400 font-medium my-16 italic">
+                    ✨ You've reached the end of the list!
                 </div>
             }
         }
@@ -103,3 +121,101 @@
         </svg>
     </button>
 </div>
+
+@code {
+    private List<AnimalReadDto>? AnimalsList { get; set; }
+
+    private bool isLoadingMore = false;
+    private bool hasNextPage = true;
+    private const int takeCount = 8;
+
+    // الفلاتر
+    private string searchText = string.Empty;
+    private int? selectedTypeId;
+    private string selectedAgeRange = string.Empty;
+
+    private int? lastAnimalId = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInitialData();
+    }
+
+    private async Task LoadInitialData()
+    {
+        AnimalsList = null;
+        hasNextPage = true;
+        lastAnimalId = null;
+
+        // تعديل: تمرير الفلاتر الحالية للـ Service عند التحميل الأول
+        var result = await AnimalServices.GetAnimalsCursorAsync(lastId: null, take: takeCount, search: searchText, typeId: selectedTypeId);
+
+        if (result != null)
+        {
+            AnimalsList = result;
+            lastAnimalId = result.LastOrDefault()?.AnimalId;
+            hasNextPage = result.Count == takeCount;
+        }
+        else
+        {
+            AnimalsList = new List<AnimalReadDto>();
+            hasNextPage = false;
+        }
+    }
+
+    private async Task LoadMore()
+    {
+        if (isLoadingMore || !hasNextPage) return;
+
+        isLoadingMore = true;
+        StateHasChanged();
+
+        // تعديل: تمرير الفلاتر الحالية هنا أيضاً لكي لا تضيع الفلترة عند النزول لأسفل الصفحة
+        var nextBatch = await AnimalServices.GetAnimalsCursorAsync(lastId: lastAnimalId, take: takeCount, search: searchText, typeId: selectedTypeId);
+
+        if (nextBatch != null && nextBatch.Any())
+        {
+            AnimalsList?.AddRange(nextBatch);
+            lastAnimalId = AnimalsList?.LastOrDefault()?.AnimalId;
+            hasNextPage = nextBatch.Count == takeCount;
+        }
+        else
+        {
+            hasNextPage = false;
+        }
+
+        isLoadingMore = false;
+        StateHasChanged();
+    }
+
+    private async Task HandleSearch(string text)
+    {
+        searchText = text;
+        await LoadInitialData();
+    }
+
+    private async Task HandleTypeChange(int typeId)
+    {
+        selectedTypeId = typeId == 0 ? null : typeId;
+        await LoadInitialData();
+    }
+
+    private async Task HandleAgeChange(string age)
+    {
+        selectedAgeRange = age;
+        await LoadInitialData();
+    }
+
+    private async Task ClearFilters()
+    {
+        searchText = string.Empty;
+        selectedTypeId = null;
+        selectedAgeRange = string.Empty;
+        await LoadInitialData();
+    }
+
+    private void HandleViewAnimalProfile(AnimalReadDto animal)
+    {
+        NavigationManager.NavigateTo($"/animals/{animal.AnimalId}");
+    }
+}

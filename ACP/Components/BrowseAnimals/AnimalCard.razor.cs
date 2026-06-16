@@ -5,28 +5,25 @@ namespace ACP.Components.BrowseAnimals;
 
 public partial class AnimalCard
 {
-    [Parameter] public Animal AnimalItem { get; set; } = new();
-    [Parameter] public EventCallback<int?> OnViewProfile { get; set; }
+    // 1. تغيير نوع المعامل هنا ليستقبل الـ DTO الجديد بدلاً من الموديل القديم
+    [Parameter] public AnimalReadDto AnimalItem { get; set; } = new();
 
-    // دالة لعرض نوع الحيوان (نصياً) بدل الرقم
+    // 2. تحديث الـ EventCallback ليمرر الكائن الكامل أو الـ ID لتتوافق مع الصفحة الرئيسية
+    [Parameter] public EventCallback<AnimalReadDto> OnViewProfile { get; set; }
+
+    // دالة لعرض نوع الحيوان (نصياً) مباشرة من الـ DTO
     public string GetAnimalTypeName()
     {
-        // هنا مستقبلاً يمكنك ربطها بجدول AnimalTypes
-        // حالياً سنضع منطق بسيط للتجربة
-        return AnimalItem.animalTypeId switch
-        {
-            1 => "Dog",
-            2 => "Cat",
-            3 => "Bird",
-            _ => "Pet"
-        };
+        // الـ DTO الجديد يحتوي بالفعل على اسم النوع كـ string جاهز (AnimalType)
+        return !string.IsNullOrEmpty(AnimalItem.AnimalType) ? AnimalItem.AnimalType : "Pet";
     }
 
     public string GetDisplayImage()
     {
-        if (AnimalItem.animalImages != null && AnimalItem.animalImages.Any())
+        // الـ DTO الجديد يحتوي على قائمة مسارات الصور باسم ImagePaths
+        if (AnimalItem.ImagePaths != null && AnimalItem.ImagePaths.Any())
         {
-            var imgPath = AnimalItem.animalImages.First().Image;
+            var imgPath = AnimalItem.ImagePaths.First();
 
             // إذا كان الرابط يبدأ بـ http فهو رابط كامل، وإلا أضف رابط السيرفر
             return imgPath.StartsWith("http") ? imgPath : $"https://your-api-url.com/{imgPath}";
@@ -45,7 +42,8 @@ public partial class AnimalCard
     {
         if (OnViewProfile.HasDelegate)
         {
-            await OnViewProfile.InvokeAsync(AnimalItem.AnimalId);
+            // نمرر الكائن بالكامل ليتوافق مع توقيع الدالة HandleViewAnimalProfile(AnimalReadDto animal) في الصفحة الرئيسية
+            await OnViewProfile.InvokeAsync(AnimalItem);
         }
     }
 }

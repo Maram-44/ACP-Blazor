@@ -138,12 +138,15 @@ namespace ACP.Services
         }
 
         // جلب الحيوانات بنظام الـ Cursor (للتحميل اللانهائي أو التصفح)
-        public async Task<List<AnimalReadDto>> GetAnimalsCursorAsync(int? lastId, int take = 6)
+        public async Task<List<AnimalReadDto>> GetAnimalsCursorAsync(int? lastId, int take = 8, string search = "", int? typeId = null)
         {
             var url = $"api/animals/cursor?take={take}";
-            if (lastId.HasValue) url += $"&lastId={lastId}";
 
-            return await _http.GetFromJsonAsync<List<AnimalReadDto>>(url);
+            if (lastId.HasValue && lastId > 0) url += $"&lastId={lastId}";
+            if (!string.IsNullOrEmpty(search)) url += $"&search={Uri.EscapeDataString(search)}";
+            if (typeId.HasValue && typeId > 0) url += $"&typeId={typeId}";
+
+            return await _http.GetFromJsonAsync<List<AnimalReadDto>>(url) ?? new List<AnimalReadDto>();
         }
 
         // جلب تفاصيل حيوان محدد
