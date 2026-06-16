@@ -1,26 +1,34 @@
 using ACP.Models.Animals;
+using ACP.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
 
 namespace ACP.Pages
 {
     public partial class MyAnimalList : ComponentBase
     {
+        [Inject] public AnimalTransactionClientService TransactionService { get; set; } = default!;
         [Inject] public HttpClient Http { get; set; } = default!;
         [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
-        // جعلنا القيم محمية (protected) لضمان وصول ملف الـ Razor لها
         protected string selectedTab = "AllAnimals";
         protected int? currentCustomerId;
         protected List<Animal> AnimalsList = new();
-        protected string ErrorMessage;
+        protected string? ErrorMessage;
+
+        // القاموس يستقبل int صريح كمفتاح
+        protected Dictionary<int, string> InputCodes = new();
+        protected bool isRelinquishModalOpen = false;
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
             {
-           
                 var storedId = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "customerId");
 
                 if (!string.IsNullOrEmpty(storedId) && int.TryParse(storedId, out int id))
@@ -29,8 +37,6 @@ namespace ACP.Pages
                 }
 
                 await LoadData();
-
-                // إجبار الصفحة على إعادة الرسم
                 StateHasChanged();
             }
         }
@@ -39,30 +45,85 @@ namespace ACP.Pages
         {
             try
             {
-                // محاولة جلب بيانات حقيقية إذا كان الـ ID موجود
                 if (currentCustomerId.HasValue)
                 {
-                    var result = await Http.GetFromJsonAsync<List<Animal>>($"api/animals/customer/{currentCustomerId}");
+                    var result = await Http.GetFromJsonAsync<List<Animal>>($"api/animals/customer/{currentCustomerId.Value}");
                     if (result != null && result.Any())
                     {
                         AnimalsList = result;
-                        return; // الخروج إذا نجح التحميل
+
+                        InputCodes.Clear();
+                        foreach (var animal in AnimalsList)
+                        {
+                            // 🟢 الحل: عمل كاستينغ صريح مع قيمة افتراضية لحماية الـ Key في القاموس
+                            int safeAnimalId = (int)(animal.AnimalId);
+                            InputCodes[safeAnimalId] = string.Empty;
+                        }
+                        ErrorMessage = null;
+                        return;
                     }
                 }
-                else
-                {
-                    // الحالة المطلوبة: إذا كان الـ API رد بنجاح لكن لا توجد بيانات (فاضي)
-                    AnimalsList = new List<Animal>();
-                    ErrorMessage = "No animals found in your account.";
-                }
+
+                AnimalsList = new List<Animal>();
+                ErrorMessage = "No animals found in your account.";
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"API Error: {ex.Message}");
             }
-
         }
 
+        protected async Task HandleReturnCode(int animalId)
+        {
+            if (!InputCodes.TryGetValue(animalId, out var code) || string.IsNullOrWhiteSpace(code))
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Please enter a valid 6-digit code.");
+                return;
+            }
+
+            try
+            {
+                // 🟢 الحل: إجبار الـ TransactionId على استقبال القيمة كـ int صريح ومؤكد
+                var requestPayload = new ConfirmCodeRequest
+                {
+                    TransactionId = (int)animalId,
+                    Code = code
+                };
+
+                var apiResponse = await TransactionService.ConfirmReturnAsync(requestPayload);
+
+                if (apiResponse != null)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Handover code confirmed successfully!");
+                    InputCodes[animalId] = string.Empty;
+                    await LoadData();
+                }
+                else
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Failed to confirm code. Please check the code and try again.");
+                }
+            }
+            catch (Exception ex)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"An error occurred: {ex.Message}");
+            }
+        }
+
+        protected void OpenRelinquishConfirmation()
+        {
+            isRelinquishModalOpen = true;
+        }
+
+        protected void CloseRelinquishConfirmation()
+        {
+            isRelinquishModalOpen = false;
+        }
+
+        protected void ConfirmRelinquish()
+        {
+            isRelinquishModalOpen = false;
+            ChangeTab("RelinquishForm");
+        }
 
         protected void ChangeTab(string tabName)
         {
@@ -80,7 +141,7 @@ namespace ACP.Pages
                 return AnimalsList.Where(a => a.Status == "AtHome" || a.Status == "Adoption");
 
             if (selectedTab == "Foster")
-                return AnimalsList.Where(a => a.Status == "Foster" || a.Status == "Foster");
+                return AnimalsList.Where(a => a.Status == "Foster");
 
             return AnimalsList;
         }
