@@ -29,7 +29,7 @@ namespace ACP.Models.Animals
         public DateTime BirthDate { get; set; }
         public DateTime? ReturnDate { get; set; }
         public string? PassportNumber { get; set; }
-
+        public List<byte[]> SelectedImagesBytes { get; set; } = new List<byte[]>();
         public List<IBrowserFile> SelectedImages { get; set; } = new();
     }
 }

@@ -254,15 +254,12 @@
 </EditForm>
 
 @code {
-    // 1. استخدام الموديل الخاص بك
     private AnimalUpsertFormModel animalModel = new();
     private bool isFoster = false;
     private bool showConfirm = false;
     private bool isSubmitting = false;
     private List<AnimalType> animalTypes = new();
-    private List<string> imagePreviews = new(); // قائمة للمعاينة (Base64)
-
-
+    private List<string> imagePreviews = new(); // للمعاينة الـ Base64
 
     protected override async Task OnInitializedAsync()
     {
@@ -272,71 +269,69 @@
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
         var files = e.GetMultipleFiles(4);
-        // حد أقصى للقراءة 15 ميجابايت (للاحتياط فقط)
-        long maxAllowedSize = 1024 * 1024 * 15;
+        long maxAllowedSize = 1024 * 1024 * 15; // 15 ميجابايت كحد أقصى للعملية
 
         foreach (var file in files)
         {
-            if (animalModel.SelectedImages.Count >= 4) break;
+            // نتحقق من مصفوفة البايتات داخل الموديل (تأكد من مطابقة الاسم لديك)
+            if (animalModel.SelectedImagesBytes.Count >= 4) break;
 
             try
             {
-                // --- السر هنا ---
-                // نطلب نسخة مصغرة (مثلاً 800 بكسل كافية جداً للرفع والمعاينة)
-                // هذه العملية تتم في المتصفح خارج ذاكرة WASM الضيقة
+                // 1. تقليص حجم الصورة لتوفير المساحة وسرعة الرفع
                 var resizedFile = await file.RequestImageFileAsync("image/jpeg", 800, 800);
 
-                // نخزن النسخة المصغرة في الموديل للإرسال
-                animalModel.SelectedImages.Add(resizedFile);
-
-                // للمعاينة: نقرأ النسخة المصغرة فقط
+                // 2. قراءة الملف وتحويله فوراً إلى مصفوفة بايتات وهي السيلفر بوليت هنا!
                 using var stream = resizedFile.OpenReadStream(maxAllowedSize);
-                var buffer = new byte[resizedFile.Size];
-                await stream.ReadAsync(buffer);
+                using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
+                var buffer = memoryStream.ToArray();
 
+                // 3. تخزين البايتات في الموديل مباشرة بدلاً من كائن المتصفح IBrowserFile
+                animalModel.SelectedImagesBytes.Add(buffer);
+
+                // 4. تحويلها إلى Base64 للمعاينة الفورية
                 imagePreviews.Add($"data:image/jpeg;base64,{Convert.ToBase64String(buffer)}");
 
-                // تحرير الذاكرة فوراً
                 StateHasChanged();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Memory/File Error: {ex.Message}");
+                Console.WriteLine($"[Image Error] File: {file.Name}, Error: {ex.Message}");
             }
         }
     }
+
     private async Task HandleFinalSubmit()
     {
-        Console.WriteLine("Button Clicked!");
+        Console.WriteLine("Confirm button clicked successfully!");
         if (isSubmitting) return;
 
         try
         {
             isSubmitting = true;
 
-            // تحديث منطق التاريخ بناءً على نوع الخدمة المختارة (Foster)
             if (!isFoster)
             {
                 animalModel.ReturnDate = null;
             }
 
-            // استدعاء الدالة الخاصة بك التي ترسل MultipartFormDataContent
+            // استدعاء الخدمة المحدثة
             var success = await AnimalService.AddNewAnimalWithImages(animalModel);
 
             if (success)
             {
                 showConfirm = false;
-                Navigation.NavigateTo("/animals-list"); // أو الصفحة التي تريدها
+                Navigation.NavigateTo("/animals-list");
             }
             else
             {
-                // يمكن إضافة إشعار خطأ هنا
                 Console.WriteLine("Failed to add animal via API.");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"System Error: {ex.Message}");
+            Console.WriteLine($"System Error during Submit: {ex.Message}");
         }
         finally
         {
@@ -344,19 +339,14 @@
         }
     }
 
-
     private void RemoveImage(int index)
     {
-        animalModel.SelectedImages.RemoveAt(index);
+        animalModel.SelectedImagesBytes.RemoveAt(index);
         imagePreviews.RemoveAt(index);
     }
-
-
-    // ملاحظة: تأكد من ربط الحقول في الـ HTML كالتالي:
-    // لربط الـ Category (ID): @bind-Value="animalModel.AnimalTypeId"
-    // لربط الـ Name: @bind-Value="animalModel.Name"
-    // وهكذا لبقية الحقول...
 }
+
+
 <style>
     /* التنسيقات الخاصة بك بقيت كما هي */
     input[type="date"]::-webkit-calendar-picker-indicator {

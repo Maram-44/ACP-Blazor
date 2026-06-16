@@ -79,46 +79,53 @@ namespace ACP.Services
         //new
         public async Task<bool> AddNewAnimalWithImages(AnimalUpsertFormModel model)
         {
-            // 1. إنشاء محتوى Form Data
-            using var content = new MultipartFormDataContent();
-
-            // 2. إضافة الحقول النصية والرقمية
-            content.Add(new StringContent(model.Name), "Name");
-            content.Add(new StringContent(model.Description), "Description");
-            content.Add(new StringContent(model.AnimalTypeId.ToString()), "AnimalTypeId");
-            content.Add(new StringContent(model.Breed), "Breed");
-            content.Add(new StringContent(model.Color), "Color");
-            content.Add(new StringContent(model.Gender), "Gender");
-            content.Add(new StringContent(model.Country), "Country");
-            content.Add(new StringContent(model.City), "City");
-            content.Add(new StringContent(model.BirthDate.ToString("yyyy-MM-dd")), "BirthDate");
-
-            // التعامل مع الحقول الاختيارية
-            if (model.ReturnDate.HasValue)
-                content.Add(new StringContent(model.ReturnDate.Value.ToString("yyyy-MM-dd")), "ReturnDate");
-
-            if (!string.IsNullOrEmpty(model.PassportNumber))
-                content.Add(new StringContent(model.PassportNumber), "PassportNumber");
-
-            // سيقوم الـ API تلقائياً في الخلفية بحساب الـ Status بناءً على الـ ReturnDate كما كتبت في كودك
-
-            // 3. معالجة الصور وإضافتها
-            foreach (var file in model.SelectedImages)
+            try
             {
-                // تحديد حجم أقصى للملف (مثلاً 5 ميجابايت) لتجنب الاستثناءات في المتصفح
-                var fileContent = new StreamContent(file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5));
-                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+                using var content = new MultipartFormDataContent();
 
-                // "Images" هو اسم الحقل المتوقع في الـ DTO الخاص بالـ API
-                content.Add(fileContent, "Images", file.Name);
+                // إضافة البيانات النصية
+                content.Add(new StringContent(model.Name ?? ""), "Name");
+                content.Add(new StringContent(model.Description ?? ""), "Description");
+                content.Add(new StringContent(model.AnimalTypeId.ToString()), "AnimalTypeId");
+                content.Add(new StringContent(model.Breed ?? ""), "Breed");
+                content.Add(new StringContent(model.Color ?? ""), "Color");
+                content.Add(new StringContent(model.Gender ?? ""), "Gender");
+                content.Add(new StringContent(model.Country ?? ""), "Country");
+                content.Add(new StringContent(model.City ?? ""), "City");
+                content.Add(new StringContent(model.BirthDate.ToString("yyyy-MM-dd")), "BirthDate");
+
+                if (model.ReturnDate.HasValue)
+                {
+                    content.Add(new StringContent(model.ReturnDate.Value.ToString("yyyy-MM-dd")), "ReturnDate");
+                }
+
+                if (!string.IsNullOrEmpty(model.PassportNumber))
+                {
+                    content.Add(new StringContent(model.PassportNumber), "PassportNumber");
+                }
+
+                // إرسال البايتات كملفات IFormFile للـ API
+                if (model.SelectedImagesBytes != null && model.SelectedImagesBytes.Any())
+                {
+                    for (int i = 0; i < model.SelectedImagesBytes.Count; i++)
+                    {
+                        var fileContent = new ByteArrayContent(model.SelectedImagesBytes[i]);
+                        fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+
+                        // الاسم "Images" يجب أن يطابق تماماً الـ DTO في الـ API
+                        content.Add(fileContent, "Images", $"animal_image_{i}_{Guid.NewGuid()}.jpg");
+                    }
+                }
+
+                var response = await _http.PostAsync("api/animals/add", content);
+                return response.IsSuccessStatusCode;
             }
-
-            // 4. إرسال الطلب للـ API
-            var response = await _http.PostAsync("api/animals/add", content);
-
-            return response.IsSuccessStatusCode;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Service Error: {ex.Message}");
+                return false;
+            }
         }
-
         public async Task<List<AnimalType>> GetAnimalTypes()
         {
             return await _http.GetFromJsonAsync<List<AnimalType>>("api/animals/animal-types")
