@@ -67,6 +67,11 @@ builder.Services.AddHttpClient<CustomerProfile>((sp, client) =>
     client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
 }).AddHttpMessageHandler<JwtHandler>();
 
+builder.Services.AddHttpClient<CustomerService>((sp, client) =>
+{
+    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
+}).AddHttpMessageHandler<JwtHandler>();
+
 builder.Services.AddHttpClient<AnimalTransactionClientService>((sp, client) =>
 {
     client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
