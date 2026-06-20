@@ -15,13 +15,13 @@ namespace ACP.Pages
         [Inject] public AnimalTransactionClientService TransactionService { get; set; } = default!;
         [Inject] public HttpClient Http { get; set; } = default!;
         [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+        [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 
         protected string selectedTab = "AllAnimals";
         protected int? currentCustomerId;
         protected List<Animal> AnimalsList = new();
         protected string? ErrorMessage;
 
-        // القاموس يستقبل int صريح كمفتاح
         protected Dictionary<int, string> InputCodes = new();
         protected bool isRelinquishModalOpen = false;
 
@@ -45,31 +45,49 @@ namespace ACP.Pages
         {
             try
             {
-                if (currentCustomerId.HasValue)
+                // 🟢 الموك داتا بدون أي كاونتر أو طلبات
+                AnimalsList = new List<Animal>
                 {
-                    var result = await Http.GetFromJsonAsync<List<Animal>>($"api/animals/customer/{currentCustomerId.Value}");
-                    if (result != null && result.Any())
+                    new Animal
                     {
-                        AnimalsList = result;
-
-                        InputCodes.Clear();
-                        foreach (var animal in AnimalsList)
-                        {
-                            // 🟢 الحل: عمل كاستينغ صريح مع قيمة افتراضية لحماية الـ Key في القاموس
-                            int safeAnimalId = (int)(animal.AnimalId);
-                            InputCodes[safeAnimalId] = string.Empty;
-                        }
-                        ErrorMessage = null;
-                        return;
+                        AnimalId = 121, // الحيوان المطلوب بالتحديد
+                        Name = "Max",
+                        Status = "Foster",
+                        BirthDate = DateTime.Now.AddYears(-2),
+                        animalImages = new List<AnimalImage> { new AnimalImage { Image = "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300" } }
+                    },
+                    new Animal
+                    {
+                        AnimalId = 122,
+                        Name = "Bella",
+                        Status = "Adoption",
+                        BirthDate = DateTime.Now.AddMonths(-8),
+                        animalImages = new List<AnimalImage> { new AnimalImage { Image = "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300" } }
+                    },
+                    new Animal
+                    {
+                        AnimalId = 123,
+                        Name = "Charlie",
+                        Status = "AtHome",
+                        BirthDate = DateTime.Now.AddYears(-1).AddMonths(-3),
+                        animalImages = new List<AnimalImage> { new AnimalImage { Image = "https://images.unsplash.com/photo-1444212477490-ca407925329e?w=300" } }
                     }
+                };
+
+                // تجهيز قاموس أكواد التسليم للحيوانات
+                InputCodes.Clear();
+                foreach (var animal in AnimalsList)
+                {
+                    int safeAnimalId = animal.AnimalId.HasValue ? animal.AnimalId.Value : 0;
+                    InputCodes[safeAnimalId] = string.Empty;
                 }
 
-                AnimalsList = new List<Animal>();
-                ErrorMessage = "No animals found in your account.";
+                ErrorMessage = null;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"API Error: {ex.Message}");
+                Console.WriteLine($"Error loading mock data: {ex.Message}");
+                ErrorMessage = "Failed to load custom simulation data.";
             }
         }
 
@@ -83,10 +101,9 @@ namespace ACP.Pages
 
             try
             {
-                // 🟢 الحل: إجبار الـ TransactionId على استقبال القيمة كـ int صريح ومؤكد
                 var requestPayload = new ConfirmCodeRequest
                 {
-                    TransactionId = (int)animalId,
+                    TransactionId = animalId,
                     Code = code
                 };
 
@@ -152,5 +169,13 @@ namespace ACP.Pages
             "Foster" => "bg-orange-100 text-orange-600 border border-orange-100",
             _ => "bg-slate-50 text-slate-500 border border-slate-100"
         };
+
+        protected void GoToRequestsDetails(int animalId)
+        {
+            if (animalId > 0)
+            {
+                NavigationManager.NavigateTo($"/requests-details/{animalId}");
+            }
+        }
     }
 }

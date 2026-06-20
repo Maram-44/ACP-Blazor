@@ -62,9 +62,10 @@
                     {
                         @foreach (var animal in filtered)
                         {
-                            // تعريف متغير int صريح داخل الحلقة التكرارية لمنع خطأ تحويل المعرفات تماماً
+                            
                             int currentAnimalId = animal.AnimalId.HasValue ? animal.AnimalId.Value : 0;
-                            <div class="flex flex-col md:flex-row items-center p-6 bg-white rounded-[2.5rem] border border-slate-100 hover:border-orange-200 transition-all mb-4 group shadow-sm">
+                            <div @onclick="() => GoToRequestsDetails(currentAnimalId)"
+                                 class="cursor-pointer flex flex-col md:flex-row items-center p-6 bg-white rounded-[2.5rem] border border-slate-100 hover:border-orange-200 transition-all mb-4 group shadow-sm">
 
                                 <div class="relative">
                                     @{
