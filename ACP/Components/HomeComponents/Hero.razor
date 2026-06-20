@@ -1,4 +1,5 @@
 ﻿@namespace ACP.Components.HomeComponents
+
 <section class="relative min-h-screen bg-white flex items-center pt-32 pb-24 overflow-hidden">
 
     <div class="absolute top-0 left-0 w-1/2 h-full bg-slate-50 skew-x-12 -translate-x-20 z-0 hidden lg:block"></div>
@@ -6,6 +7,7 @@
     <div class="container mx-auto px-8 md:px-16 lg:px-24 relative z-10">
         <div class="grid lg:grid-cols-12 gap-16 items-center">
 
+            @* الجانب النصي والتسويقي *@
             <div class="lg:col-span-6 text-left order-2 lg:order-1">
                 <div class="inline-flex items-center gap-4 mb-8">
                     <span class="w-12 h-[2px] bg-orange-500"></span>
@@ -18,8 +20,9 @@
                     For You.
                 </h1>
 
+                @* تم تعديل الوصف هنا ليعكس الفكرة الجديدة تماماً *@
                 <p class="text-xl text-slate-500 leading-relaxed mb-12 max-w-lg font-medium">
-                    The all-in-one platform for pet lovers. From compassionate adoption to seamless medical bookings and a smart marketplace. We’re your pet’s new best friend.
+                    The ultimate digital hub for pet lovers. Connect through our comprehensive veterinary directory, find trusted forever homes via member exchange, and share experiences in our community blog.
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-5 mb-16">
@@ -28,7 +31,7 @@
                         <svg class="w-5 h-5 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </button>
                     <button class="bg-white text-slate-900 border-2 border-slate-900 px-10 py-5 rounded-full font-black text-lg hover:bg-slate-900 hover:text-white transition-all shadow-sm">
-                        Browse Store
+                        Read Our Blog
                     </button>
                 </div>
 
@@ -48,6 +51,7 @@
                 </div>
             </div>
 
+            @* الجانب البصري والكرت الذكي *@
             <div class="lg:col-span-6 relative order-1 lg:order-2 px-4">
                 <div class="relative grid grid-cols-2 gap-6">
                     <div class="col-span-2 bg-orange-100 aspect-[16/10] rounded-[3.5rem] overflow-hidden relative shadow-2xl border-[12px] border-white group">
@@ -64,23 +68,25 @@
                         </div>
                     </div>
 
+                    @* 🩺 [تم التعديل]: كرت العيادات بصيغة تسويقية كدليل معلومات واستكشاف *@
                     <div class="relative aspect-square rounded-[3rem] overflow-hidden flex flex-col justify-between p-10 text-white shadow-xl lg:-translate-y-16 hover:-translate-y-20 transition-transform duration-500 group" style="background-color: #00b987;">
                         <img src="https://images.unsplash.com/photo-1599443015574-be5fe8a05783?q=80&w=400&auto=format&fit=crop"
                              class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay group-hover:scale-110 transition-transform duration-500" alt="Medical">
-                        <div class="text-5xl relative z-10">🏥</div>
+                        <div class="text-5xl relative z-10">🩺</div>
                         <div class="space-y-2 relative z-10">
-                            <p class="text-2xl font-black leading-none">Medical</p>
-                            <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest">Instant Booking</p>
+                            <p class="text-2xl font-black leading-none">Vets Guide</p>
+                            <p class="text-[10px] font-bold opacity-90 uppercase tracking-widest">Explore Top Clinics</p>
                         </div>
                     </div>
 
+                    @* 📝 [تم التعديل]: تحويل كرت المتجر القديم إلى كرت المدونة ليتناسب مع الفكرة الجديدة *@
                     <div class="relative aspect-square rounded-[3rem] overflow-hidden flex flex-col justify-between p-10 text-white shadow-xl hover:-translate-y-4 transition-transform duration-500 group bg-slate-900">
                         <img src="https://images.unsplash.com/photo-1535294435445-d7249524ef2e?q=80&w=400&auto=format&fit=crop"
-                             class="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay group-hover:scale-110 transition-transform duration-500" alt="Market">
-                        <div class="text-5xl relative z-10">🛒</div>
+                             class="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay group-hover:scale-110 transition-transform duration-500" alt="Blog">
+                        <div class="text-5xl relative z-10">📝</div>
                         <div class="space-y-2 relative z-10">
-                            <p class="text-2xl font-black leading-none">Market</p>
-                            <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest">Buy & Sell</p>
+                            <p class="text-2xl font-black leading-none">Pet Blog</p>
+                            <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest">Stories & Expert Advice</p>
                         </div>
                     </div>
                 </div>

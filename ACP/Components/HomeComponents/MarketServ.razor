@@ -1,4 +1,5 @@
 ﻿@namespace ACP.Components.HomeComponents
+@inject NavigationManager NavigationManager
 
 <section id="pet-exchange" class="py-32 bg-slate-50">
     <div class="container mx-auto px-8 md:px-16 lg:px-24">
@@ -23,7 +24,7 @@
                     <p class="text-slate-500 mb-10 font-bold leading-relaxed max-w-xs">
                         Browse pets listed by other owners who are looking for a new family.
                     </p>
-                    <button class="bg-slate-900 text-white px-10 py-5 rounded-[2rem] font-black group-hover:bg-orange-600 transition-all transform group-hover:-translate-y-1">
+                    <button @onclick="NavigateToGallery" class="bg-slate-900 text-white px-10 py-5 rounded-[2rem] font-black group-hover:bg-orange-600 transition-all transform group-hover:-translate-y-1">
                         View Gallery
                     </button>
                 </div>
@@ -39,7 +40,7 @@
                     <p class="text-orange-100 mb-10 font-bold leading-relaxed max-w-xs">
                         Can't look after your pet anymore? List them here to find a verified parent.
                     </p>
-                    <button class="bg-white text-orange-600 px-10 py-5 rounded-[2rem] font-black group-hover:bg-slate-900 group-hover:text-white transition-all transform group-hover:-translate-y-1">
+                    <button @onclick="NavigateToListPet" class="bg-white text-orange-600 px-10 py-5 rounded-[2rem] font-black group-hover:bg-slate-900 group-hover:text-white transition-all transform group-hover:-translate-y-1">
                         List My Pet
                     </button>
                 </div>
@@ -65,5 +66,13 @@
 </section>
 
 @code {
-    // القسم الآن جاهز لربطه بصفحة التبديل أو الإضافة
+    private void NavigateToGallery()
+    {
+        NavigationManager.NavigateTo("/browse-animals");
+    }
+
+    private void NavigateToListPet()
+    {
+        NavigationManager.NavigateTo("/add-animal");
+    }
 }
