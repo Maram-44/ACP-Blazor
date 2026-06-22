@@ -4,12 +4,12 @@
 @using ACP.Components.BrowseAnimals
 @inject NavigationManager NavigationManager
 @inject ACP.Services.AnimalServices AnimalServices
+@inject IJSRuntime JSRuntime 
 
 <div class="bg-[#F8FAFC] min-h-screen relative">
 
-    @* 1. Hero Section *@
-    <AnimalHero>
-        @* حل مشكلة التحويل: قمنا بتمرير قيمة رقمية صريحة (0 في حال كان الـ ID فارغاً) ليتوافق مع بروبيرتي المكون *@
+    @* 1. Hero Section - 🟢 قمنا بربط أحداث الضغط هنا مع دوال السكرول المخصصة *@
+    <AnimalHero OnAdoptRequested="ScrollToCards" OnCategoriesRequested="ScrollToFilters">
         <AnimalFilter SearchText="@searchText"
                       SelectedTypeId="@(selectedTypeId ?? 0)"
                       SelectedAgeRange="@selectedAgeRange"
@@ -136,6 +136,18 @@
 
     private int? lastAnimalId = null;
 
+    // 🟢 1. دالة التمرير لقسم الكاردات (id="browse")
+    private async Task ScrollToCards()
+    {
+        await JSRuntime.InvokeVoidAsync("eval", "document.getElementById('browse').scrollIntoView({ behavior: 'smooth' })");
+    }
+
+    // 🟢 2. دالة التمرير لقسم الفلاتر بداخل الهيرو (id="filterSection")
+    private async Task ScrollToFilters()
+    {
+        await JSRuntime.InvokeVoidAsync("eval", "document.getElementById('filterSection').scrollIntoView({ behavior: 'smooth' })");
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await LoadInitialData();
@@ -147,7 +159,6 @@
         hasNextPage = true;
         lastAnimalId = null;
 
-        // تعديل: تمرير الفلاتر الحالية للـ Service عند التحميل الأول
         var result = await AnimalServices.GetAnimalsCursorAsync(lastId: null, take: takeCount, search: searchText, typeId: selectedTypeId);
 
         if (result != null)
@@ -170,7 +181,6 @@
         isLoadingMore = true;
         StateHasChanged();
 
-        // تعديل: تمرير الفلاتر الحالية هنا أيضاً لكي لا تضيع الفلترة عند النزول لأسفل الصفحة
         var nextBatch = await AnimalServices.GetAnimalsCursorAsync(lastId: lastAnimalId, take: takeCount, search: searchText, typeId: selectedTypeId);
 
         if (nextBatch != null && nextBatch.Any())
