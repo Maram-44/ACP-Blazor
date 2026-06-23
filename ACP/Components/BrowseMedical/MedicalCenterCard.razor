@@ -1,6 +1,6 @@
 ﻿@namespace ACP.Components.MedicalCenters
 
-<div class="bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 hover:shadow-2xl transition-all duration-500 group text-left mb-6 h-full flex flex-col" dir="ltr">
+<div @onclick="() => OnCardClick.InvokeAsync(Id)" class="bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 hover:shadow-2xl transition-all duration-500 group text-left mb-6 h-full flex flex-col" dir="ltr">
     @* Image Section *@
     <div class="relative h-64 overflow-hidden bg-gray-100">
         <img src="@ImageUrl"

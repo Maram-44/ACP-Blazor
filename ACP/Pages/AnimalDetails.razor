@@ -300,7 +300,7 @@
                         }
                     </div>
 
-                    @if (!isCurrentUserOwner){
+                    @if (!isCurrentUserOwner && !hasAlreadyApplied){
                     <button @onclick="HandleAdoptionClick" class="adopt-action-btn">
                         Request To Take @AnimalItem?.Name Home
                     </button>

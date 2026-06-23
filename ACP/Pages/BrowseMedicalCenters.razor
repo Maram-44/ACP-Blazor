@@ -74,12 +74,14 @@
                     ? string.Join(" / ", center.medicalCenterServices.Select(s => s.ServiceName))
                     : "General Veterinary Services";
 
-                    <MedicalCenterCard Title="@center.Name"
+                    <MedicalCenterCard Id="@center.Id"
+                                       Title="@center.Name"
                                        Description="@allServicesText"
                                        ImageUrl="@centerImage"
                                        Location="@fullLocation"
                                        PhoneNumber="@center.Phone"
-                                       Email="@center.Email" />
+                                       Email="@center.Email"
+                                       OnCardClick="() => NavigateToDetails(center.Id)" />
                 }
             }
             else

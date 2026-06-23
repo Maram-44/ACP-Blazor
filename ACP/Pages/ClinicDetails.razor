@@ -153,16 +153,16 @@
                 <div class="image-frame">
                     @if (currentCenter?.medicalCenterServices != null && currentCenter.medicalCenterServices.Any())
                     {
-                        <img src="/@currentCenter.medicalCenterServices.ElementAt(currentImageIndex).Image" class="w-full h-full object-cover" />
+                        <img src="/@currentCenter.ImagePath" class="w-full h-full object-cover" />
                     }
-                    <div class="absolute bottom-8 w-full flex justify-center gap-4">
+                   @*  <div class="absolute bottom-8 w-full flex justify-center gap-4">
                         <button @onclick="PrevImage" class="w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center text-slate-800 hover:bg-orange-600 hover:text-white transition-all">
                             <i class="fas fa-chevron-left"></i>
                         </button>
                         <button @onclick="NextImage" class="w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center text-slate-800 hover:bg-orange-600 hover:text-white transition-all">
                             <i class="fas fa-chevron-right"></i>
                         </button>
-                    </div>
+                    </div> *@
                 </div>
             </div>
 

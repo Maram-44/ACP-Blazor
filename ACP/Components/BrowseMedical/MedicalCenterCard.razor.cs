@@ -10,4 +10,6 @@ public partial class MedicalCenterCard
     [Parameter] public string Location { get; set; } = string.Empty;
     [Parameter] public string PhoneNumber { get; set; } = string.Empty; // خاصية الهاتف الجديدة
     [Parameter] public string Email { get; set; } = string.Empty;
+    [Parameter] public int Id { get; set; }
+    [Parameter] public EventCallback<int> OnCardClick { get; set; }
 }

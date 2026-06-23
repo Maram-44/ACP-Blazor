@@ -92,7 +92,7 @@
                                 </select>
                             </div>
                             <div class="flex-1">
-                                <InputText @bind-Value="model.PhoneNumber" onkeypress="return preventNonNumbers(event)" inputmode="numeric" type="tel" placeholder="5X XXX XXXX" class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-600 outline-none font-medium transition-all" />
+                                <InputText @bind-Value="model.PhoneNumber" onkeypress="return preventNonNumbers(event)" inputmode="numeric" type="tel"  class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-600 outline-none font-medium transition-all" />
                                 <ValidationMessage For="@(() => model.PhoneNumber)" class="text-red-500 text-xs mt-1" />
                             </div>
                         </div>

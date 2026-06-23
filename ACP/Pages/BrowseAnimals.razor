@@ -9,7 +9,7 @@
 <div class="bg-[#F8FAFC] min-h-screen relative">
 
     @* 1. Hero Section - 🟢 قمنا بربط أحداث الضغط هنا مع دوال السكرول المخصصة *@
-    <AnimalHero OnAdoptRequested="ScrollToCards" OnCategoriesRequested="ScrollToFilters">
+    <AnimalHero>
         <AnimalFilter SearchText="@searchText"
                       SelectedTypeId="@(selectedTypeId ?? 0)"
                       SelectedAgeRange="@selectedAgeRange"

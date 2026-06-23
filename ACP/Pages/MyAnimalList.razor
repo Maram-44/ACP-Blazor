@@ -1,5 +1,8 @@
 ﻿@page "/my-animals"
 @using ACP.Models.Animals
+@using ACP.Services // 👈 تأكدي من كتابة الـ Namespace الصحيح لخدمة الحيوانات هنا
+@inject AnimalServices AnimalService // 👈 حقن الخدمة الخاصة بكِ
+@inject NavigationManager NavManager // 👈 حقن الموجه للانتقال بين الصفحات
 
 <main class="container mx-auto px-6 py-24 max-w-7xl font-sans text-right" dir="ltr">
     <div class="flex flex-col lg:flex-row gap-10">
@@ -49,10 +52,11 @@
                 </div>
 
                 <div class="space-y-6 px-2">
-                    @{
-                        var filtered = GetFilteredAnimals();
+                    @if (isLoading)
+                    {
+                        <div class="p-10 text-center text-slate-400 font-bold">Loading animals...</div>
                     }
-                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    else if (!string.IsNullOrEmpty(ErrorMessage))
                     {
                         <div class="p-10 text-center bg-slate-50 rounded-[3rem] border border-dashed border-slate-200">
                             <p class="text-slate-400 font-bold">@ErrorMessage</p>
@@ -60,16 +64,19 @@
                     }
                     else
                     {
+                        var filtered = GetFilteredAnimals();
                         @foreach (var animal in filtered)
                         {
-                            
-                            int currentAnimalId = animal.AnimalId.HasValue ? animal.AnimalId.Value : 0;
+                            int currentAnimalId = animal.AnimalId;
+
+                            @* 👈 عند الضغط على الكرت يتم تحويل المستخدم إلى صفحة التفاصيل الحصرية للحيوان *@
                             <div @onclick="() => GoToRequestsDetails(currentAnimalId)"
                                  class="cursor-pointer flex flex-col md:flex-row items-center p-6 bg-white rounded-[2.5rem] border border-slate-100 hover:border-orange-200 transition-all mb-4 group shadow-sm">
 
                                 <div class="relative">
                                     @{
-                                        var firstImg = animal.animalImages?.FirstOrDefault()?.Image ?? "https://via.placeholder.com/300";
+                                        // 👈 التعديل هنا ليتوافق مع قائمة مسارات الصور القادمة من الـ DTO
+                                        var firstImg = animal.ImagePaths?.FirstOrDefault() ?? "https://via.placeholder.com/300";
                                     }
                                     <img src="@firstImg" class="w-32 h-32 rounded-[2rem] object-cover border-4 border-white shadow-xl">
                                 </div>
@@ -84,13 +91,18 @@
                                     <p class="text-sm text-slate-400">Date of Birth: @animal.BirthDate.ToShortDateString()</p>
                                 </div>
 
-                                @if (selectedTab == "Foster" || animal.Status == "Foster")
+                                @* 👈 الشرط المحدث: يظهر حقل الكود فقط إذا كانت حالة الحيوان تساوى صراحة InFosterCare *@
+                                @if (animal.Status == "InFosterCare")
                                 {
-                                    <div class="mt-4 md:mt-0 flex flex-col items-end gap-2 border-l border-slate-100 pl-6">
+                                    @* 🛑 لمنع الـ Click الخاص بالزر من تفعيل الـ Click الخاص بالكرت بالكامل والانتقال لصفحة التفاصيل، نستخدم @onclick:stopPropagation *@
+                                    <div class="mt-4 md:mt-0 flex flex-col items-end gap-2 border-l border-slate-100 pl-6" @onclick:stopPropagation>
                                         <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Handover Code</span>
 
                                         <div class="flex gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-200 shadow-inner">
-                                            @* استخدام الـ currentAnimalId الصريح والمعزول *@
+                                            @if (!InputCodes.ContainsKey(currentAnimalId))
+                                            {
+                                                InputCodes[currentAnimalId] = string.Empty;
+                                            }
                                             <input type="text" placeholder="Enter Code"
                                                    @bind="InputCodes[currentAnimalId]"
                                                    class="bg-transparent w-28 px-2 py-1 text-sm font-bold text-slate-700 outline-none text-center" maxlength="6" />
@@ -129,4 +141,85 @@
             </div>
         </div>
     </div>
+}
+
+@code {
+    private List<AnimalReadDto> AnimalsList { get; set; } = new();
+    private Dictionary<int, string> InputCodes { get; set; } = new();
+    private string selectedTab = "AllAnimals";
+    private string ErrorMessage { get; set; } = string.Empty;
+    private bool isLoading = true;
+    private bool isRelinquishModalOpen = false;
+
+    // جلب البيانات فور تشغيل الصفحة والدخول عليها
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            isLoading = true;
+            AnimalsList = await AnimalService.GetMyAnimalsAsync();
+            if (AnimalsList == null || !AnimalsList.Any())
+            {
+                ErrorMessage = "No animals found in your account.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Failed to load your animals. Please try again later.";
+            Console.WriteLine($"Error fetching animals: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private List<AnimalReadDto> GetFilteredAnimals()
+    {
+        if (selectedTab == "Adoption")
+            return AnimalsList.Where(a => a.Status == "ForAdoption").ToList();
+        if (selectedTab == "Foster")
+            return AnimalsList.Where(a => a.Status == "InFosterCare" || a.Status == "Foster").ToList();
+
+        return AnimalsList;
+    }
+
+    // 👈 دالة التحويل لصفحة التفاصيل المطلوبة
+    private void GoToRequestsDetails(int animalId)
+    {
+        NavManager.NavigateTo($"/requests-details/{animalId}");
+    }
+
+    private void ChangeTab(string tabName)
+    {
+        selectedTab = tabName;
+    }
+
+    private void HandleReturnCode(int animalId)
+    {
+        if (InputCodes.TryGetValue(animalId, out var code) && !string.IsNullOrEmpty(code))
+        {
+            Console.WriteLine($"Submitting code: {code} for Animal ID: {animalId}");
+            // هنا تضعين كود استدعاء الـ API لإرسال الكود عند الحاجة
+        }
+    }
+
+    private void OpenRelinquishConfirmation() => isRelinquishModalOpen = true;
+    private void CloseRelinquishConfirmation() => isRelinquishModalOpen = false;
+    private void ConfirmRelinquish()
+    {
+        isRelinquishModalOpen = false;
+        // منطق التخلي عن الحيوان هنا
+    }
+
+    private string GetTagClass(string status)
+    {
+        return status switch
+        {
+            "ForAdoption" => "bg-orange-100 text-orange-700",
+            "InFosterCare" => "bg-green-100 text-green-700",
+            "Pending" => "bg-yellow-100 text-yellow-700",
+            _ => "bg-slate-100 text-slate-700"
+        };
+    }
 }

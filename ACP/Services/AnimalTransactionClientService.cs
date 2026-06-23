@@ -2,6 +2,7 @@
 using ACP.Models.Animals;
 using ACP.Models.Animals;
 using System.Buffers.Text;
+using System.Net.Http;
 using System.Net.Http.Json;
 
 namespace ACP.Services
@@ -14,6 +15,33 @@ namespace ACP.Services
         public AnimalTransactionClientService(HttpClient http)
         {
             _http = http;
+        }
+
+        public async Task<ContactDetailsDTO?> GetAcceptedApplicantDetailsAsync(int animalId)
+        {
+            try
+            {
+                // استدعاء الـ Endpoint التي قمنا بإنشائها في الباكيند
+                var response = await _http.GetAsync($"api/AnimalTransaction/accepted-applicant/{animalId}");
+
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return null; // لا توجد معاملة معلقة، وهذا طبيعي جداً قبل قبول أي طلب
+                }
+
+                // قراءة وتفسير البيانات في حال النجاح
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<ContactDetailsDTO>();
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching accepted applicant details: {ex.Message}");
+                return null;
+            }
         }
 
         // 1. تقديم طلب لتبني أو رعاية
@@ -78,6 +106,7 @@ namespace ACP.Services
         public async Task<ApiResponse<string>?> ConfirmDeliveryAsync(ConfirmCodeRequest request)
         {
             var response = await _http.PostAsJsonAsync($"{BasePath}/confirm-delivery", request);
+            response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<ApiResponse<string>>();
         }
 
@@ -86,6 +115,11 @@ namespace ACP.Services
         {
             var response = await _http.PostAsJsonAsync($"{BasePath}/confirm-return", request);
             return await response.Content.ReadFromJsonAsync<ApiResponse<string>>();
+        }
+
+        public async Task<bool> CheckIfAlreadyAppliedAsync(int animalId)
+        {
+            return await _http.GetFromJsonAsync<bool>($"{BasePath}/check-applied/{animalId}");
         }
     }
 }

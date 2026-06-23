@@ -154,5 +154,10 @@ namespace ACP.Services
         {
             return await _http.GetFromJsonAsync<AnimalReadDto>($"api/animals/{id}");
         }
+
+        public async Task<AnimalReadDto> GetAnimalByOfCustomerIdAsync(int id)
+        {
+            return await _http.GetFromJsonAsync<AnimalReadDto>($"api/animals/customer/{id}");
+        }
     }
 }

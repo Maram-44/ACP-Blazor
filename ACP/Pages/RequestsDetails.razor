@@ -5,6 +5,7 @@
 @inject AnimalServices AnimalService
 @inject AnimalTransactionClientService TransactionService
 @inject IJSRuntime JS
+@inject NavigationManager Navigation
 
 <div class="min-h-screen bg-white font-sans text-slate-900 pb-20" dir="ltr">
 
@@ -14,7 +15,7 @@
         {
             <div class="flex flex-col items-center justify-center min-h-[400px] gap-4">
                 <div class="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-                <p class="text-slate-500 font-medium">Fetching real data from database...</p>
+                <p class="text-slate-500 font-medium">Loading...</p>
             </div>
         }
         else
@@ -90,6 +91,8 @@
                     </div>
 
                     @* OTP Final Verification Section *@
+                    @if (acceptedDetails?.StatusTransaction == "WaitingForDelivery")
+                    {
                     <div class="bg-[#0f172a] rounded-[2rem] p-8 lg:p-12 mt-10 text-center relative z-20">
                         <p class="text-white text-sm mb-4">Enter the One-Time Password (OTP) code to finalize the handover process inside database</p>
                         <div class="flex justify-center gap-2 md:gap-4 mt-4">
@@ -107,6 +110,20 @@
                             Confirm Code & Complete Order
                         </button>
                     </div>
+        }
+        else if (acceptedDetails?.StatusTransaction == "InFosterCare")
+                    {
+                        @* 🔥 إذا أصبحت الحالة في الاستضافة المؤقتة، نعرض رسالة مريحة للمالك بدون حقل الكود *@
+                        <div class="bg-emerald-950 border border-emerald-800/30 rounded-[2rem] p-8 lg:p-12 mt-10 text-center relative z-20">
+                            <div class="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-emerald-400 mb-2">Pet is Currently in Foster Care</h3>
+                            <p class="text-emerald-200/70 text-sm max-w-md mx-auto">
+                                The handover was successful! Use the contact details above to follow up with the fosterer or check on your pet's updates.
+                            </p>
+                        </div>
+                    }
                 </div>
             }
             else
@@ -207,26 +224,27 @@
 
     private async Task FetchRealDataFromDatabase()
     {
-        try
-        {
-            isLoading = true;
-            animalItem = await AnimalService.GetAnimalByIdAsync(AnimalId);
+        isLoading = true;
+        animalItem = await AnimalService.GetAnimalByOfCustomerIdAsync(AnimalId);
 
+        // 1. تحقق أولاً: هل هناك شخص مقبول وننتظر الكود؟
+        var accepted = await TransactionService.GetAcceptedApplicantDetailsAsync(AnimalId);
+        if (accepted != null)
+        {
+            acceptedDetails = accepted;
+            isAcceptedState = true;
+
+            // 🔥 الحل هنا: إعادة تعيين المعرّف من البيانات القادمة من الباكيند مباشرة لحمايتها من الـ Refresh
+            currentTransactionId = accepted.TransactionId;
+        }
+        else
+        {
+            // 2. إذا لم يكن هناك مقبول، اجلب قائمة الانتظار
             var apiApplicants = await TransactionService.GetApplicantsForAnimalAsync(AnimalId);
-            if (apiApplicants != null)
-            {
-                applicants = apiApplicants;
-            }
+            if (apiApplicants != null) applicants = apiApplicants;
+            isAcceptedState = false;
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error fetching live database metrics: {ex.Message}");
-        }
-        finally
-        {
-            isLoading = false;
-            StateHasChanged();
-        }
+        isLoading = false;
     }
 
     private void RequestAcceptance(ApplicantDTO app)
@@ -300,31 +318,57 @@
         string fullCode = string.Join("", otpCode);
         if (fullCode.Length < 6)
         {
-            otpStatusMessage = "Please enter the complete 6-digit code.";
+            otpStatusMessage = "❌ Please enter the complete 6-digit code.";
+            StateHasChanged();
             return;
         }
 
         try
         {
+            otpStatusMessage = "⏳ Verifying code...";
+            StateHasChanged();
+
             var confirmRequest = new ConfirmCodeRequest
             {
                 TransactionId = currentTransactionId,
                 Code = fullCode
             };
 
+            // 1. إرسال الطلب للسيرفر
             var response = await TransactionService.ConfirmDeliveryAsync(confirmRequest);
 
+            // 🚨 2. التحقق الحقيقي والمضمون من نجاح العملية
+            // إذا كان الباكيند يعيد كود نجاح (مثلاً true أو Response ممتلئ بحالة نجاح)
             if (response != null)
             {
-                otpStatusMessage = "🎉 Handover Confirmed & Database Updated Successfully!";
+                otpStatusMessage = "🎉 Handover Confirmed";
+                StateHasChanged();
+
+                // ننتظر ثانية ليقرأ المستخدم رسالة النجاح
+                await Task.Delay(1000);
+
+                // تفريغ مصفوفة الأرقام
+                otpCode = new string[6];
+
+                Navigation.NavigateTo("/my-animals");
+            }
+            else
+            {
+                // إذا السيرفر رجع استجابة ممتلئة بـ Null أو تعني الفشل
+                otpStatusMessage = "❌ Invalid confirmation code. Please try again.";
             }
         }
         catch (Exception ex)
         {
-            otpStatusMessage = $"Error dispatching code: {ex.Message}";
+            // 💥 هنا سيتم التقاط خطأ الـ 400 Bad Request الذي ظهر في الصورة الثالثة!
+            Console.WriteLine($"Verification error: {ex.Message}");
+            otpStatusMessage = "❌ Incorrect OTP Code. Please verify and try again.";
+        }
+        finally
+        {
+            StateHasChanged();
         }
     }
-
     private async Task DeclineApplicant(ApplicantDTO app)
     {
         try

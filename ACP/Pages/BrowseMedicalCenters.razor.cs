@@ -12,6 +12,7 @@ public partial class BrowseMedicalCenters : ComponentBase
 {
     // حقن الخدمة الحقيقية للباك آند
     [Inject] private ACP.Services.MedicalCenterService MedicalService { get; set; } = default!;
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
 
     private List<MedicalCenter> CentersList = new();
     private List<MedicalCenter> FilteredCenters = new();
@@ -80,5 +81,10 @@ public partial class BrowseMedicalCenters : ComponentBase
     {
         selectedCity = "all";
         ApplyFilter();
+    }
+
+    private void NavigateToDetails(int id)
+    {
+        Navigation.NavigateTo($"/clinic-details/{id}");
     }
 }

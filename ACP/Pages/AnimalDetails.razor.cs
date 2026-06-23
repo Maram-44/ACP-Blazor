@@ -36,6 +36,8 @@ public partial class AnimalDetails : ComponentBase
 
     protected bool isCurrentUserOwner = false;
 
+    private bool hasAlreadyApplied { get; set; } = false;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadAnimal();
@@ -61,6 +63,8 @@ public partial class AnimalDetails : ComponentBase
                     {
                         isCurrentUserOwner = true;
                     }
+
+                    hasAlreadyApplied = await MyTransactionService.CheckIfAlreadyAppliedAsync(AnimalId);
                 }
             }
         }
