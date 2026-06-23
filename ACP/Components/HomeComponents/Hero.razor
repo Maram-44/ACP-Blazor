@@ -1,4 +1,6 @@
 ﻿@namespace ACP.Components.HomeComponents
+@inject NavigationManager NavigationManager
+
 <section class="relative min-h-screen bg-white flex items-center pt-32 pb-24 overflow-hidden">
 
     <div class="absolute top-0 left-0 w-1/2 h-full bg-slate-50 skew-x-12 -translate-x-20 z-0 hidden lg:block"></div>
@@ -19,16 +21,16 @@
                 </h1>
 
                 <p class="text-xl text-slate-500 leading-relaxed mb-12 max-w-lg font-medium">
-                    The all-in-one platform for pet lovers. From compassionate adoption to seamless medical bookings and a smart marketplace. We’re your pet’s new best friend.
+                    The ultimate digital hub for pet lovers. Connect through our comprehensive veterinary directory, find trusted forever homes via member exchange, and share experiences in our community blog.
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-5 mb-16">
-                    <button class="bg-orange-600 text-white px-10 py-5 rounded-full font-black text-lg hover:shadow-2xl hover:bg-orange-700 transition-all flex items-center justify-center gap-3 group">
+                    <button @onclick="NavigateToAnimal" class="bg-orange-600 text-white px-10 py-5 rounded-full font-black text-lg hover:shadow-2xl hover:bg-orange-700 transition-all flex items-center justify-center gap-3 group">
                         Get Started
                         <svg class="w-5 h-5 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </button>
-                    <button class="bg-white text-slate-900 border-2 border-slate-900 px-10 py-5 rounded-full font-black text-lg hover:bg-slate-900 hover:text-white transition-all shadow-sm">
-                        Browse Store
+                    <button @onclick="NavigatToBlog" class="bg-white text-slate-900 border-2 border-slate-900 px-10 py-5 rounded-full font-black text-lg hover:bg-slate-900 hover:text-white transition-all shadow-sm">
+                        Read Our Blog
                     </button>
                 </div>
 
@@ -48,15 +50,16 @@
                 </div>
             </div>
 
+            @* الجانب البصري والكرت الذكي *@
             <div class="lg:col-span-6 relative order-1 lg:order-2 px-4">
                 <div class="relative grid grid-cols-2 gap-6">
                     <div class="col-span-2 bg-orange-100 aspect-[16/10] rounded-[3.5rem] overflow-hidden relative shadow-2xl border-[12px] border-white group">
                         <img src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?q=80&w=2069&auto=format&fit=crop"
-                             alt="Happy Dog" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        alt="Happy Dog" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
 
                         <div class="absolute bottom-8 right-8 bg-white/95 backdrop-blur-md p-5 rounded-[2rem] flex items-center gap-4 shadow-xl border border-white/20">
                             <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=150&auto=format&fit=crop"
-                                 alt="Sarah Jenkins" class="w-12 h-12 rounded-2xl object-cover ring-2 ring-orange-500">
+                            alt="Sarah Jenkins" class="w-12 h-12 rounded-2xl object-cover ring-2 ring-orange-500">
                             <div>
                                 <p class="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest">Verified Host</p>
                                 <p class="text-sm font-black text-slate-900">Sarah Jenkins</p>
@@ -66,21 +69,21 @@
 
                     <div class="relative aspect-square rounded-[3rem] overflow-hidden flex flex-col justify-between p-10 text-white shadow-xl lg:-translate-y-16 hover:-translate-y-20 transition-transform duration-500 group" style="background-color: #00b987;">
                         <img src="https://images.unsplash.com/photo-1599443015574-be5fe8a05783?q=80&w=400&auto=format&fit=crop"
-                             class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay group-hover:scale-110 transition-transform duration-500" alt="Medical">
-                        <div class="text-5xl relative z-10">🏥</div>
+                        class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay group-hover:scale-110 transition-transform duration-500" alt="Medical">
+                        <div class="text-5xl relative z-10">🩺</div>
                         <div class="space-y-2 relative z-10">
-                            <p class="text-2xl font-black leading-none">Medical</p>
-                            <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest">Instant Booking</p>
+                            <p class="text-2xl font-black leading-none">Vets Guide</p>
+                            <p class="text-[10px] font-bold opacity-90 uppercase tracking-widest">Explore Top Clinics</p>
                         </div>
                     </div>
 
                     <div class="relative aspect-square rounded-[3rem] overflow-hidden flex flex-col justify-between p-10 text-white shadow-xl hover:-translate-y-4 transition-transform duration-500 group bg-slate-900">
                         <img src="https://images.unsplash.com/photo-1535294435445-d7249524ef2e?q=80&w=400&auto=format&fit=crop"
-                             class="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay group-hover:scale-110 transition-transform duration-500" alt="Market">
-                        <div class="text-5xl relative z-10">🛒</div>
+                        class="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay group-hover:scale-110 transition-transform duration-500" alt="Blog">
+                        <div class="text-5xl relative z-10">📝</div>
                         <div class="space-y-2 relative z-10">
-                            <p class="text-2xl font-black leading-none">Market</p>
-                            <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest">Buy & Sell</p>
+                            <p class="text-2xl font-black leading-none">Pet Blog</p>
+                            <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest">Stories & Expert Advice</p>
                         </div>
                     </div>
                 </div>
@@ -97,4 +100,13 @@
 
 @code {
 
+    private void NavigatToBlog()
+    {
+        NavigationManager.NavigateTo("/blog");
+    }
+
+    private void NavigateToAnimal()
+    {
+        NavigationManager.NavigateTo("/browse-animals");
+    }
 }

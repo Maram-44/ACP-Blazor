@@ -1,4 +1,5 @@
 ﻿@namespace ACP.Components.HomeComponents
+
 <section class="py-32 bg-slate-50 relative overflow-hidden">
     <div class="container mx-auto px-8 md:px-16 lg:px-24">
         <div class="max-w-3xl mb-20 text-left">
@@ -7,25 +8,32 @@
         </div>
 
         <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            @* الكرت الأول: ملاك الحيوانات *@
             <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 hover:-translate-y-3 transition-all duration-500">
                 <div class="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center text-3xl mb-8">🏠</div>
                 <h4 class="text-2xl font-black mb-4">Pet Owners</h4>
-                <p class="text-slate-500 text-sm leading-relaxed">Looking for the best care, medical services, and premium products for their furry friends.</p>
+                <p class="text-slate-500 text-sm leading-relaxed">Looking for the best care, tips, and professional guidance for their furry friends.</p>
             </div>
+
+            @* الكرت الثاني: تصفح العيادات واستكشافها *@
             <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 hover:-translate-y-3 transition-all duration-500 mt-8 lg:mt-12">
                 <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-3xl mb-8">🩺</div>
-                <h4 class="text-2xl font-black mb-4">Vets</h4>
-                <p class="text-slate-500 text-sm leading-relaxed">Professional clinics wanting to streamline their bookings and reach more pet owners efficiently.</p>
+                <h4 class="text-2xl font-black mb-4">Vets Directory</h4>
+                <p class="text-slate-500 text-sm leading-relaxed">Explore top certified local veterinary clinics, their services, and expert medical teams easily.</p>
             </div>
+
+            @* الكرت الثالث: المتبنين والمجازفين *@
             <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 hover:-translate-y-3 transition-all duration-500">
                 <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center text-3xl mb-8">🐾</div>
                 <h4 class="text-2xl font-black mb-4">Rescuers</h4>
                 <p class="text-slate-500 text-sm leading-relaxed">Dedicated souls searching for forever homes for abandoned animals with full transparency.</p>
             </div>
+
+            @* الكرت الرابع الجديد: المدوّنة والتواصل بين الملاك *@
             <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 hover:-translate-y-3 transition-all duration-500 mt-8 lg:mt-12">
-                <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-3xl mb-8">🤝</div>
-                <h4 class="text-2xl font-black mb-4">Sellers</h4>
-                <p class="text-slate-500 text-sm leading-relaxed">Individual users who want to sell their pre-owned pet accessories to a trusted community.</p>
+                <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-3xl mb-8">📝</div>
+                <h4 class="text-2xl font-black mb-4">Pet Blog</h4>
+                <p class="text-slate-500 text-sm leading-relaxed">Share your stories, ask questions, and connect with other pet parents to build a supportive community.</p>
             </div>
         </div>
     </div>
