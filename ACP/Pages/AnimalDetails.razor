@@ -300,9 +300,11 @@
                         }
                     </div>
 
+                    @if (!isCurrentUserOwner){
                     <button @onclick="HandleAdoptionClick" class="adopt-action-btn">
                         Request To Take @AnimalItem?.Name Home
                     </button>
+                    }
                 </div>
             </div>
 

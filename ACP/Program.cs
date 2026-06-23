@@ -1,92 +1,65 @@
 using ACP;
 using ACP.Models.Customers;
 using ACP.Services;
-using Blazored.LocalStorage;
+//  „ «·«” €‰«¡ ⁄‰ «·‹ LocalStorage ··√„«‰
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.SignalR.Client;
 
-
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-//builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-
-builder.Services.AddTransient<JwtHandler>();
-
-builder.Services.AddHttpClient<AnimalOprationsServices>((sp, client) =>
+builder.Services.AddAuthorizationCore(options =>
 {
-    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-}).AddHttpMessageHandler<JwtHandler>();
+    // ”Ì«”…  ›—÷ √‰ ÌﬂÊ‰ «·Õ”«» ﬂ«„·« ··œŒÊ·
+    options.AddPolicy("CompletedProfileOnly", policy =>
+        policy.RequireClaim("IsProfileCompleted", "true"));
+});
 
-builder.Services.AddHttpClient<AnimalServices>((sp, client) =>
-{
-    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-}).AddHttpMessageHandler<JwtHandler>();
+// 1.  ”ÃÌ· «·‹ «·‹ Handler «·„—ﬂ“Ì
+builder.Services.AddScoped<CookieAndTokenHandler>();
 
-builder.Services.AddHttpClient<MedicalCenterReservationService>((sp, client) =>
-{
-    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-}).AddHttpMessageHandler<JwtHandler>();
-
-builder.Services.AddHttpClient<MedicalCenterService>((sp, client) =>
-{
-    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-}).AddHttpMessageHandler<JwtHandler>();
-
-builder.Services.AddHttpClient<AccountService>((sp, client) =>
-{
-    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-}).AddHttpMessageHandler<JwtHandler>();
-
-builder.Services.AddHttpClient<BasketService>((sp, client) =>
-{
-    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-}).AddHttpMessageHandler<JwtHandler>();
-
-builder.Services.AddHttpClient<ProductService>((sp, client) =>
-{
-    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-}).AddHttpMessageHandler<JwtHandler>();
-
-builder.Services.AddHttpClient<SubscriptionService>((sp, client) =>
-{
-    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-}).AddHttpMessageHandler<JwtHandler>();
-
-builder.Services.AddHttpClient<NotificationClientService>((sp, client) =>
-{
-    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-}).AddHttpMessageHandler<JwtHandler>();
-
-builder.Services.AddHttpClient<CustomerProfile>((sp, client) =>
-{
-    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-}).AddHttpMessageHandler<JwtHandler>();
-
-builder.Services.AddHttpClient<AnimalTransactionClientService>((sp, client) =>
-{
-    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-}).AddHttpMessageHandler<JwtHandler>();
-
-builder.Services.AddHttpClient <BlogHttpService>((sp, client) =>
-{
-    client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()["url"]);
-}).AddHttpMessageHandler<JwtHandler>();
-
+// 2.  ›⁄Ì· ‰Ÿ«„ «·’·«ÕÌ«  «·√”«”Ì ›Ì »·«“Ê—
 builder.Services.AddAuthorizationCore();
 
-//builder.Services.AddAuthorizationCore(options =>
-//{
-//    // ”Ì«”…  „‰⁄ «·œŒÊ· ≈·« ·„‰ √ﬂ„· „·›Â «·‘Œ’Ì
-//    options.AddPolicy("CompletedProfileOnly", policy =>
-//        policy.RequireClaim("IsProfileCompleted", "true"));
-//});
 
-// ≈⁄œ«œ « ’«· SignalR
+// 2.  ›⁄Ì· ‰Ÿ«„ «·’·«ÕÌ«  «·√”«”Ì
+builder.Services.AddAuthorizationCore();
+
+// 3.  ÊÕÌœ ﬁ—«¡… «·—«»ÿ „‰ «·≈⁄œ«œ«  »Ê—  7073
+var apiUrl = builder.Configuration["url"];
+
+// 4.  ”ÃÌ· «·⁄„Ì· «·„Œ’’ ··‹ Auth ·ﬂÌ ·« Ì„— »«·‹ Handler ‰›”Â (Õ„«Ì… „‰ «·ﬂ—«‘)
+builder.Services.AddHttpClient("AuthClient", client => { client.BaseAddress = new Uri(apiUrl); });
+
+builder.Services.AddScoped<CustomAuthStateProvider>(sp =>
+{
+    var clientFactory = sp.GetRequiredService<IHttpClientFactory>();
+    var authHttpClient = clientFactory.CreateClient("AuthClient");
+    return new CustomAuthStateProvider(authHttpClient);
+});
+
+// —»ÿ «·„“Êœ „⁄ «·‰Ÿ«„ «·«› —«÷Ì ·»·«“Ê—
+builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<CustomAuthStateProvider>());
+
+
+
+builder.Services.AddHttpClient<AnimalOprationsServices>((sp, client) => { client.BaseAddress = new Uri(apiUrl); }).AddHttpMessageHandler<CookieAndTokenHandler>();
+builder.Services.AddHttpClient<AnimalServices>((sp, client) => { client.BaseAddress = new Uri(apiUrl); }).AddHttpMessageHandler<CookieAndTokenHandler>();
+//builder.Services.AddHttpClient<MedicalCenterReservationService>((sp, client) => { client.BaseAddress = new Uri(apiUrl); }).AddHttpMessageHandler<CookieAndTokenHandler>();
+builder.Services.AddHttpClient<MedicalCenterService>((sp, client) => { client.BaseAddress = new Uri(apiUrl); }).AddHttpMessageHandler<CookieAndTokenHandler>();
+builder.Services.AddHttpClient<AccountService>((sp, client) => { client.BaseAddress = new Uri(apiUrl); }).AddHttpMessageHandler<CookieAndTokenHandler>();
+builder.Services.AddHttpClient<NotificationClientService>((sp, client) => { client.BaseAddress = new Uri(apiUrl); }).AddHttpMessageHandler<CookieAndTokenHandler>();
+builder.Services.AddHttpClient<CustomerService>((sp, client) => { client.BaseAddress = new Uri(apiUrl); }).AddHttpMessageHandler<CookieAndTokenHandler>();
+builder.Services.AddHttpClient<AnimalTransactionClientService>((sp, client) => { client.BaseAddress = new Uri(apiUrl); }).AddHttpMessageHandler<CookieAndTokenHandler>();
+builder.Services.AddHttpClient<BlogHttpService>((sp, client) => { client.BaseAddress = new Uri(apiUrl); }).AddHttpMessageHandler<CookieAndTokenHandler>();
+builder.Services.AddScoped<UserSession>();
+
+
+// 5. ≈⁄œ«œ « ’«· SignalR (»ﬁÌ ﬂ„« ÂÊ)
 builder.Services.AddScoped(sp =>
 {
     var navManager = sp.GetRequiredService<NavigationManager>();
@@ -96,8 +69,4 @@ builder.Services.AddScoped(sp =>
         .Build();
 });
 
-
-builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
-
-builder.Services.AddBlazoredLocalStorage();
 await builder.Build().RunAsync();

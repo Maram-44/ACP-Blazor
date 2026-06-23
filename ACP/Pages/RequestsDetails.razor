@@ -186,7 +186,7 @@
 @code {
     [Parameter] public int AnimalId { get; set; }
 
-    private Animal? animalItem;
+    private AnimalReadDto? animalItem;
     private List<ApplicantDTO> applicants = new();
     private ApplicantDTO? selectedApplicant;
     private ApplicantDTO? appToAccept;
@@ -210,7 +210,7 @@
         try
         {
             isLoading = true;
-            animalItem = await AnimalService.GetAnimalById(AnimalId);
+            animalItem = await AnimalService.GetAnimalByIdAsync(AnimalId);
 
             var apiApplicants = await TransactionService.GetApplicantsForAnimalAsync(AnimalId);
             if (apiApplicants != null)

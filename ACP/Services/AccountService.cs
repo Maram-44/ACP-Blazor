@@ -1,7 +1,8 @@
 ﻿using ACP.Models.Account;
-using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http.Json;
+using static System.Net.WebRequestMethods;
 
 namespace ACP.Services
 {
@@ -9,35 +10,26 @@ namespace ACP.Services
     {
         private readonly HttpClient _httpClient;
         private readonly NavigationManager _nav;
-        private readonly ILocalStorageService _localStorage;
+        private readonly AuthenticationStateProvider AuthStateProvider;
 
-        public AccountService(HttpClient httpClient, NavigationManager nav, ILocalStorageService localStorage)
+        public AccountService(HttpClient httpClient, NavigationManager nav, AuthenticationStateProvider authenticationStateProvider)
         {
             _httpClient = httpClient;
             _nav = nav;
-            _localStorage = localStorage;
+            AuthStateProvider = authenticationStateProvider;
         }
 
-        public async Task<bool> Login(LoginRequest model)
+        public async Task<AuthResponseDto?> Login(LoginRequest model)
         {
+
             var response = await _httpClient.PostAsJsonAsync("api/Account/login", model);
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<AuthModel>();
-
-                if (result != null && result.IsAuthenticated)
-                {
-                    // تخزين التوكن في المتصفح
-                    await _localStorage.SetItemAsync("authToken", result.Token);
-
-                    // يمكنك أيضاً تخزين الـ Refresh Token إذا أردتِ
-                    await _localStorage.SetItemAsync("refreshToken", result.RefreshToken);
-
-                    return true;
-                }
+                return await response.Content.ReadFromJsonAsync<AuthResponseDto>();
             }
-            return false;
+
+            return null;
         }
 
         public async Task<AuthModel> Register(Register model)
@@ -52,11 +44,15 @@ namespace ACP.Services
             return new AuthModel { IsAuthenticated = false, Message = "حدث خطأ في الاتصال بالسيرفر" };
         }
 
-        public async Task Logout()
+        private async Task HandleLogout()
         {
-            // مسح التوكن عند تسجيل الخروج
-            await _localStorage.RemoveItemAsync("authToken");
-            await _localStorage.RemoveItemAsync("refreshToken");
+            // طلب الـ Logout سيجعل الباكيند يحذف التوكن من الداتابيز ويصفر الكوكي
+            await _httpClient.PostAsync("api/Account/logout", null);
+
+            // تصفير الـ RAM وتنبيه بلازور
+            ((CustomAuthStateProvider)AuthStateProvider).NotifyUserLogout();
+
+            _nav.NavigateTo("/login");
         }
 
         public async Task<bool> CheckEmailAvailability(string email)

@@ -1,11 +1,11 @@
 ﻿@page "/add-animal"
+@attribute [Authorize(Policy = "CompletedProfileOnly")]
 @using Microsoft.AspNetCore.Components.Forms
 @using System.ComponentModel.DataAnnotations
 @inject AnimalServices AnimalService
 @inject NavigationManager Navigation
 
-@* استخدام EditForm للتحقق من البيانات *@
-<EditForm Model="animalModel" OnValidSubmit="() => showConfirm = true">
+<EditForm Model="animalModel" OnValidSubmit="HandleValidSubmit">
     <DataAnnotationsValidator />
 
     <section class="min-h-screen bg-white py-24 px-6 md:px-16 lg:px-24 relative overflow-hidden">
@@ -38,7 +38,7 @@
                             <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Category</label>
                             <InputSelect @bind-Value="animalModel.AnimalTypeId" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 appearance-none transition-all">
                                 <option value="">Select Category</option>
-                                @foreach(var type in animalTypes)
+                                @foreach (var type in animalTypes)
                                 {
                                     <option value="@type.TypeId">@type.TypeName</option>
                                 }
@@ -55,8 +55,10 @@
                         <div class="space-y-4">
                             <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Birth Date</label>
                             <div class="relative custom-date-container">
-                                <InputDate @bind-Value="animalModel.BirthDate" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 focus:bg-white rounded-3xl outline-none font-bold text-slate-800 transition-all cursor-pointer" />
+                                <InputDate @bind-Value="animalModel.BirthDate" min="@MinBirthDate"
+                                           max="@MaxBirthDate" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 focus:bg-white rounded-3xl outline-none font-bold text-slate-800 transition-all cursor-pointer" />
                             </div>
+                            <ValidationMessage For="() => animalModel.BirthDate" class="text-red-500 text-[10px] font-bold ml-4" />
                         </div>
 
                         <div class="space-y-4">
@@ -75,16 +77,19 @@
                         <div class="space-y-4">
                             <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">City</label>
                             <InputText @bind-Value="animalModel.City" placeholder="Riyadh" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 transition-all" />
+                            <ValidationMessage For="() => animalModel.City" class="text-red-500 text-[10px] font-bold ml-4" />
                         </div>
 
                         <div class="space-y-4">
                             <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Passport Number <span class="text-[10px] text-slate-300">(Optional)</span></label>
                             <InputText @bind-Value="animalModel.PassportNumber" placeholder="P-123456" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 transition-all" />
+                            <ValidationMessage For="() => animalModel.PassportNumber" class="text-red-500 text-[10px] font-bold ml-4" />
                         </div>
 
                         <div class="space-y-4">
                             <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Color</label>
                             <InputText @bind-Value="animalModel.Color" placeholder="e.g. Creamy White" class="w-full px-8 py-5 bg-slate-50 border-2 border-transparent focus:border-orange-500 rounded-3xl outline-none font-bold text-slate-800 transition-all" />
+                            <ValidationMessage For="() => animalModel.Color" class="text-red-500 text-[10px] font-bold ml-4" />
                         </div>
 
                         <div class="space-y-4">
@@ -93,16 +98,16 @@
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
                             </InputSelect>
+                            <ValidationMessage For="() => animalModel.Gender" class="text-red-500 text-[10px] font-bold ml-4" />
                         </div>
 
                         <div class="md:col-span-2 space-y-4">
                             <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Service Type</label>
                             <div class="grid grid-cols-2 gap-4">
-                                @* تم تغيير نوع الزر لـ type="button" لمنع عمل Submit تلقائي *@
-                                <button type="button" @onclick="() => isFoster = false" class="@(!isFoster ? "bg-slate-900 text-white" : "bg-slate-50 text-slate-500") py-5 rounded-3xl font-black transition-all border-2 border-transparent">
+                                <button type="button" @onclick="SetAdoptionMode" class="@(!isFoster ? "bg-slate-900 text-white" : "bg-slate-50 text-slate-500") py-5 rounded-3xl font-black transition-all border-2 border-transparent">
                                     Forever Adoption
                                 </button>
-                                <button type="button" @onclick="() => isFoster = true" class="@(isFoster ? "bg-orange-600 text-white" : "bg-slate-50 text-slate-500") py-5 rounded-3xl font-black transition-all border-2 border-transparent">
+                                <button type="button" @onclick="SetFosterMode" class="@(isFoster ? "bg-orange-600 text-white" : "bg-slate-50 text-slate-500") py-5 rounded-3xl font-black transition-all border-2 border-transparent">
                                     Temporary Fostering
                                 </button>
                             </div>
@@ -112,7 +117,8 @@
                         {
                             <div class="md:col-span-2 space-y-4 animate-fade-in">
                                 <label class="text-xs font-black uppercase tracking-widest text-orange-600 ml-2">Expected Return Date</label>
-                                <InputDate @bind-Value="animalModel.ReturnDate" class="w-full px-8 py-5 bg-orange-50 border-2 border-orange-200 rounded-3xl outline-none font-bold text-slate-800 transition-all cursor-pointer" />
+                                <InputDate @bind-Value="animalModel.ReturnDate" min="@MinReturnDate" class="w-full px-8 py-5 bg-orange-50 border-2 border-orange-200 rounded-3xl outline-none font-bold text-slate-800 transition-all cursor-pointer" />
+                                <ValidationMessage For="() => animalModel.ReturnDate" class="text-red-500 text-[10px] font-bold ml-4" />
                             </div>
                         }
 
@@ -132,14 +138,12 @@
                             </div>
 
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                @* زر إضافة الصور *@
                                 <div class="group relative aspect-square bg-slate-50 rounded-[2rem] border-4 border-dashed border-slate-100 flex flex-col items-center justify-center transition-all hover:border-orange-400 hover:bg-orange-50/30 cursor-pointer overflow-hidden">
                                     <div class="text-2xl group-hover:scale-110 transition-transform">📸</div>
                                     <span class="text-[10px] font-black text-slate-400 mt-2">Add Photo</span>
                                     <InputFile OnChange="HandleFileSelected" multiple accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" />
                                 </div>
 
-                                @* عرض الصور التي تم اختيارها بالفعل *@
                                 @for (int i = 0; i < 4; i++)
                                 {
                                     int index = i;
@@ -147,7 +151,6 @@
                                         @if (imagePreviews.Count > index)
                                         {
                                             <img src="@imagePreviews[index]" class="w-full h-full object-cover" />
-                                            @* زر لحذف الصورة إذا أراد المستخدم *@
                                             <button type="button" @onclick="() => RemoveImage(index)" class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
                                         }
                                         else
@@ -157,6 +160,7 @@
                                     </div>
                                 }
                             </div>
+                            <ValidationMessage For="() => animalModel.SelectedImagesBytes" class="text-red-500 text-[11px] font-bold ml-4 block mt-2" />
                         </div>
                     </div>
 
@@ -216,11 +220,11 @@
                     </div>
                     <div class="flex flex-col gap-1 p-2">
                         <span class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Type / Breed</span>
-                        <span class="font-black text-slate-900">@animalModel.AnimalTypeId - @animalModel.Breed</span>
+                        <span class="font-black text-slate-900">@GetCategoryName(animalModel.AnimalTypeId) - @animalModel.Breed</span>
                     </div>
                     <div class="flex flex-col gap-1 p-2 border-t border-slate-200/50">
                         <span class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Birth Date</span>
-                        <span class="font-black text-slate-900">@animalModel.BirthDate.ToShortDateString()</span>
+                        <span class="font-black text-slate-900">@animalModel.BirthDate?.ToShortDateString()</span>
                     </div>
                     <div class="flex flex-col gap-1 p-2 border-t border-slate-200/50">
                         <span class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Passport</span>
@@ -243,14 +247,12 @@
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-4">
-                    <button @onclick="() => showConfirm = false" class="flex-1 bg-slate-100 text-slate-900 py-5 rounded-2xl font-black hover:bg-slate-200 transition">Back to Edit</button>
+                    <button type="button" @onclick="() => showConfirm = false" class="flex-1 bg-slate-100 text-slate-900 py-5 rounded-2xl font-black hover:bg-slate-200 transition">Back to Edit</button>
                     <button type="button" @onclick="HandleFinalSubmit" class="relative z-[110] flex-1 bg-orange-600 text-white py-5 rounded-2xl font-black shadow-lg shadow-orange-200 hover:bg-orange-700 transition">Confirm & Submit</button>
                 </div>
             </div>
         </div>
     }
-
-
 </EditForm>
 
 @code {
@@ -259,38 +261,64 @@
     private bool showConfirm = false;
     private bool isSubmitting = false;
     private List<AnimalType> animalTypes = new();
-    private List<string> imagePreviews = new(); // للمعاينة الـ Base64
+    private List<string> imagePreviews = new();
+
+    private string MinBirthDate => DateTime.Today.AddYears(-25).ToString("yyyy-MM-dd");
+    private string MaxBirthDate => DateTime.Today.ToString("yyyy-MM-dd");
+    private string MinReturnDate => DateTime.Today.AddDays(2).ToString("yyyy-MM-dd");
+
 
     protected override async Task OnInitializedAsync()
     {
         animalTypes = await AnimalService.GetAnimalTypes();
     }
 
+    private void SetAdoptionMode()
+    {
+        isFoster = false;
+        animalModel.ReturnDate = null;
+    }
+
+    private void SetFosterMode()
+    {
+        isFoster = true;
+        // افتراضياً يوضع تاريخ العودة بعد يومين لتسهيل الاختيار على المستخدم
+        animalModel.ReturnDate = DateTime.Today.AddDays(2);
+    }
+
+    private string GetCategoryName(int? typeId)
+    {
+        return animalTypes.FirstOrDefault(t => t.TypeId == typeId)?.TypeName ?? typeId?.ToString() ?? "Unknown";
+    }
+
+    private void HandleValidSubmit()
+    {
+        // إذا كانت استضافة وتاريخ العودة فارغ، نمنع عرض نافذة التأكيد
+        if (isFoster && !animalModel.ReturnDate.HasValue)
+        {
+            return;
+        }
+        showConfirm = true;
+    }
+
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
         var files = e.GetMultipleFiles(4);
-        long maxAllowedSize = 1024 * 1024 * 15; // 15 ميجابايت كحد أقصى للعملية
+        long maxAllowedSize = 1024 * 1024 * 15;
 
         foreach (var file in files)
         {
-            // نتحقق من مصفوفة البايتات داخل الموديل (تأكد من مطابقة الاسم لديك)
             if (animalModel.SelectedImagesBytes.Count >= 4) break;
 
             try
             {
-                // 1. تقليص حجم الصورة لتوفير المساحة وسرعة الرفع
                 var resizedFile = await file.RequestImageFileAsync("image/jpeg", 800, 800);
-
-                // 2. قراءة الملف وتحويله فوراً إلى مصفوفة بايتات وهي السيلفر بوليت هنا!
                 using var stream = resizedFile.OpenReadStream(maxAllowedSize);
                 using var memoryStream = new MemoryStream();
                 await stream.CopyToAsync(memoryStream);
                 var buffer = memoryStream.ToArray();
 
-                // 3. تخزين البايتات في الموديل مباشرة بدلاً من كائن المتصفح IBrowserFile
                 animalModel.SelectedImagesBytes.Add(buffer);
-
-                // 4. تحويلها إلى Base64 للمعاينة الفورية
                 imagePreviews.Add($"data:image/jpeg;base64,{Convert.ToBase64String(buffer)}");
 
                 StateHasChanged();
@@ -304,7 +332,6 @@
 
     private async Task HandleFinalSubmit()
     {
-        Console.WriteLine("Confirm button clicked successfully!");
         if (isSubmitting) return;
 
         try
@@ -316,7 +343,6 @@
                 animalModel.ReturnDate = null;
             }
 
-            // استدعاء الخدمة المحدثة
             var success = await AnimalService.AddNewAnimalWithImages(animalModel);
 
             if (success)
@@ -346,9 +372,7 @@
     }
 }
 
-
 <style>
-    /* التنسيقات الخاصة بك بقيت كما هي */
     input[type="date"]::-webkit-calendar-picker-indicator {
         background-color: #ea580c;
         padding: 5px;

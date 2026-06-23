@@ -15,6 +15,7 @@ public partial class AnimalDetails : ComponentBase
     [Inject] protected NavigationManager Navigation { get; set; } = default!;
     [Inject] protected AuthenticationStateProvider AuthProvider { get; set; } = default!;
     [Inject] protected IJSRuntime JSRuntime { get; set; } = default!;
+    [Inject] protected UserSession UserSession { get; set; } = default!;
 
     [Inject] protected AnimalTransactionClientService MyTransactionService { get; set; } = default!;
 
@@ -33,6 +34,8 @@ public partial class AnimalDetails : ComponentBase
 
     protected bool showSuccessModal { get; set; } = false;
 
+    protected bool isCurrentUserOwner = false;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadAnimal();
@@ -46,6 +49,19 @@ public partial class AnimalDetails : ComponentBase
             if (AnimalId > 0)
             {
                 AnimalItem = await MyAnimalService.GetAnimalByIdAsync(AnimalId);
+
+                // التحقق مما إذا كان المستخدم الحالي هو صاحب الحيوان
+                if (AnimalItem != null)
+                {
+                    var currentCustomerId = await UserSession.GetCustomerIdAsync();
+
+                    // ملاحظة: تأكدي من أن الـ Dto الخاص بالحيوان (AnimalReadDto) يحتوي على معرف الصاحب 
+                    // لنفترض أن اسمه OwnerId أو CustomerId قادم من السيرفر
+                    if (currentCustomerId.HasValue && currentCustomerId == AnimalItem.AnimalOwner)
+                    {
+                        isCurrentUserOwner = true;
+                    }
+                }
             }
         }
         catch (Exception ex)
@@ -62,10 +78,10 @@ public partial class AnimalDetails : ComponentBase
     {
         if (AnimalItem == null) return;
 
-        var authState = await AuthProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
+        // 1. جلب معرف الكستمر من الجلسة (إذا كان null يعني غير مسجل دخول)
+        var customerId = await UserSession.GetCustomerIdAsync();
 
-        if (user?.Identity == null || !user.Identity.IsAuthenticated)
+        if (customerId == null)
         {
             isLoggedIn = false;
             modalType = "LOGIN";
@@ -75,36 +91,18 @@ public partial class AnimalDetails : ComponentBase
 
         isLoggedIn = true;
 
-        try
+        // 2. التحقق من الـ Claim الخاص باكتمال البروفايل مباشرة وبسطر واحد
+        bool isDataComplete = await UserSession.IsProfileCompletedAsync();
+
+        if (!isDataComplete)
         {
-            var profile = await MyCustomerService.GetProfileAsync();
-
-            if (profile == null)
-            {
-                modalType = "PROFILE";
-                showProfileModal = true;
-                return;
-            }
-
-            bool isDataComplete = !string.IsNullOrWhiteSpace(profile.PhoneNumber) &&
-                                  !string.IsNullOrWhiteSpace(profile.Nationality) &&
-                                  !string.IsNullOrWhiteSpace(profile.TypeOfIdentity) &&
-                                  !string.IsNullOrWhiteSpace(profile.ImageWithIdentity) &&
-                                  !string.IsNullOrWhiteSpace(profile.IdentityNumber);
-
-            if (!isDataComplete)
-            {
-                modalType = "PROFILE";
-                showProfileModal = true;
-                return;
-            }
-
-            OpenRequestModal();
+            modalType = "PROFILE";
+            showProfileModal = true;
+            return;
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error during profile validation: {ex.Message}");
-        }
+
+        // 3. إذا كان مسجل دخول وملفه كامل، نفتح مودال الطلب فوراً
+        OpenRequestModal();
     }
 
     private void OpenRequestModal()

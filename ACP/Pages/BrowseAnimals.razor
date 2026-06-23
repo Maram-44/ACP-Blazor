@@ -15,7 +15,8 @@
                       SelectedAgeRange="@selectedAgeRange"
                       OnSearchChanged="HandleSearch"
                       OnTypeChanged="HandleTypeChange"
-                      OnAgeChanged="HandleAgeChange" />
+                      OnAgeChanged="HandleAgeChange"
+                      AnimalTypes="@animalTypes"/>
     </AnimalHero>
 
     @* 2. Main Content Section *@
@@ -124,6 +125,7 @@
 
 @code {
     private List<AnimalReadDto>? AnimalsList { get; set; }
+    private List<AnimalType>? animalTypes { get; set; }
 
     private bool isLoadingMore = false;
     private bool hasNextPage = true;
@@ -136,9 +138,11 @@
 
     private int? lastAnimalId = null;
 
+
     protected override async Task OnInitializedAsync()
     {
         await LoadInitialData();
+        animalTypes = await AnimalServices.GetAnimalTypes();
     }
 
     private async Task LoadInitialData()

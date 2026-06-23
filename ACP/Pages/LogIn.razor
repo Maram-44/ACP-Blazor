@@ -2,6 +2,7 @@
 @layout Empty
 @inject AccountService _accountService
 @inject NavigationManager _Nav
+@inject AuthenticationStateProvider AuthStateProvider
 
 <div class="w-full h-full flex">
 
@@ -125,6 +126,7 @@
         </div>
     </div>
 </div>
+
 @code {
     private LoginRequest loginModel = new LoginRequest();
     private string errorMessage = "";
@@ -132,18 +134,28 @@
 
     private async Task HandleLogin()
     {
+        if (isSubmitting) return;
+
         isSubmitting = true;
         errorMessage = "";
 
+        // 2. استدعاء خدمة تسجيل الدخول (لتجلب التوكن والـ Roles)
         var result = await _accountService.Login(loginModel);
 
-        if (result)
+        if (result != null && !string.IsNullOrEmpty(result.Token))
         {
-            _Nav.NavigateTo("/"); // التوجه للرئيسية عند النجاح
+            // 3. تحويل الـ Provider المذوّد من بلازور إلى نوعنا المخصص لحفظ التوكن في الـ RAM
+            var customAuthStateProvider = (CustomAuthStateProvider)AuthStateProvider;
+
+            // 4. تمرير التوكن ليعيش في الـ RAM وتنبيه السيستم بالكامل
+            customAuthStateProvider.NotifyUserLogin(result.Token);
+
+            // 5. التوجه للرئيسية عند النجاح
+            _Nav.NavigateTo("/");
         }
         else
         {
-            errorMessage = "الإيميل أو كلمة المرور غير صحيحة";
+            errorMessage = "The email or password is incorrect, or the system is not authorized";
         }
 
         isSubmitting = false;

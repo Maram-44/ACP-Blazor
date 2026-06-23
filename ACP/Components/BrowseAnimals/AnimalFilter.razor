@@ -1,4 +1,5 @@
 ﻿@namespace ACP.Components.BrowseAnimals
+@inject AnimalServices animalServices
 
 @* الفلتر الأبيض العائم - تم تحسين الظلال والبروز *@
 <div class="bg-white p-3 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.12)] flex flex-wrap items-center gap-3 border border-white/20">
@@ -29,7 +30,7 @@
     </div>
 
     @* الفلترة بالعمر *@
-    <div class="flex-1 min-w-[150px]">
+   @*  <div class="flex-1 min-w-[150px]">
         <select value="@SelectedAgeRange" @onchange="OnAgeChange"
                 class="w-full px-5 py-5 bg-[#F8FAFC] rounded-[1.8rem] border-none outline-none text-slate-600 font-bold cursor-pointer hover:bg-orange-50 transition-colors text-sm">
             <option value="all">Any Age</option>
@@ -37,7 +38,7 @@
             <option value="young">Young (1-3 Years)</option>
             <option value="adult">Adult (3+ Years)</option>
         </select>
-    </div>
+    </div> *@
 
     @* زر البحث باللون الأسود العميق *@
     <button class="bg-[#0F172A] p-5 rounded-[1.5rem] text-white shadow-lg hover:bg-black transition-all active:scale-95 group">

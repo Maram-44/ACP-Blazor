@@ -14,6 +14,7 @@
         public string Status { get; set; } = null!;
         public string AnimalType { get; set; } = null!;
         public DateTime BirthDate { get; set; }
+        public int AnimalOwner { get; set; }
         public List<string> ImagePaths { get; set; } = new();
     }
 }

@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Authorization;
 using ACP.Models.Customers;
 using ACP.Services;
 using Microsoft.JSInterop;
-using System.Security.Claims;
 
 namespace ACP.Pages;
 
@@ -13,34 +11,27 @@ public partial class ProfilePage : ComponentBase
     [Inject] protected CustomerService MyCustomerService { get; set; } = default!;
     [Inject] protected NavigationManager Navigation { get; set; } = default!;
     [Inject] protected IJSRuntime JSRuntime { get; set; } = default!;
-    [Inject] protected AuthenticationStateProvider AuthProvider { get; set; } = default!;
+    [Inject] protected UserSession Session { get; set; } = default!;
 
     protected CustomerProfile? userProfile;
     protected bool isLoading = true;
     protected bool isSaving = false;
     protected bool showSuccessModal = false;
-    protected string? imagePreview;
+    protected string? imagePreview; // سنستمر في استخدامه فقط كمعاينة بصرية للمستخدم بالصفحة
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             isLoading = true;
-            var authState = await AuthProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
 
-            if (user.Identity is not { IsAuthenticated: true })
+            int? currentCustomerId = await Session.GetCustomerIdAsync();
+
+            if (currentCustomerId == null || currentCustomerId == 0)
             {
-                Navigation.NavigateTo("SignUp");
+                Navigation.NavigateTo("logIn");
                 return;
             }
-
-            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                            ?? user.FindFirst("sub")?.Value
-                            ?? user.FindFirst("uid")?.Value
-                            ?? user.FindFirst("nameid")?.Value;
-
-            int currentUserId = int.TryParse(userIdClaim, out var id) ? id : 0;
 
             userProfile = await MyCustomerService.GetProfileAsync();
 
@@ -48,12 +39,11 @@ public partial class ProfilePage : ComponentBase
             {
                 userProfile = new CustomerProfile
                 {
-                    UserId = currentUserId,
-                    Email = CleanEmail(user.FindFirst(ClaimTypes.Email)?.Value ?? ""),
-                    FirstName = user.FindFirst("FirstName")?.Value ?? "",
-                    LastName = user.FindFirst("LastName")?.Value ?? "",
-                    UserName = user.Identity.Name ?? "User",
-                    MiddleName = user.FindFirst("MiddleName")?.Value ?? "",
+                    CustomerId = currentCustomerId.Value,
+                    FirstName = "",
+                    LastName = "",
+                    MiddleName = "",
+                    Email = "",
                     Nationality = "",
                     PhoneNumber = "",
                     TypeOfIdentity = "",
@@ -62,13 +52,35 @@ public partial class ProfilePage : ComponentBase
             }
             else
             {
-                if (userProfile.UserId == 0) userProfile.UserId = currentUserId;
+                if (userProfile.CustomerId == 0)
+                {
+                    userProfile.CustomerId = currentCustomerId.Value;
+                }
+
+                // تأمين الحقول من الـ null
+                userProfile.FirstName ??= "";
+                userProfile.LastName ??= "";
+                userProfile.MiddleName ??= "";
+                userProfile.Nationality ??= "";
+                userProfile.PhoneNumber ??= "";
+                userProfile.TypeOfIdentity ??= "";
+                userProfile.IdentityNumber ??= "";
+
                 userProfile.Email = CleanEmail(userProfile.Email);
+
+                // 👈 هنا التعديل: الباكيند الآن يعيد رابط كامل للصورة (ImagePath القادم من السيرفر)
+                // نضعه في المعاينة مباشرة ليظهر للمستخدم فور فتح الصفحة
                 imagePreview = userProfile.ImageWithIdentity;
             }
         }
-        catch (Exception ex) { Console.WriteLine($"Init Error: {ex.Message}"); }
-        finally { isLoading = false; }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Init Profile Error: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private string CleanEmail(string email)
@@ -86,15 +98,17 @@ public partial class ProfilePage : ComponentBase
     {
         if (userProfile == null) return;
 
+        // فحص تأكيد كلمة المرور في الفرونتيند قبل إرسالها للسيرفر
+        if (!string.IsNullOrEmpty(userProfile.NewPassword) && userProfile.NewPassword != userProfile.ConfirmNewPassword)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "New password and confirmation do not match.");
+            return;
+        }
+
         userProfile.MiddleName ??= "";
         userProfile.PhoneNumber ??= "";
         userProfile.TypeOfIdentity ??= "";
         userProfile.Nationality ??= "";
-
-        if (!string.IsNullOrEmpty(imagePreview))
-        {
-            userProfile.ImageWithIdentity = imagePreview;
-        }
 
         isSaving = true;
         try
@@ -104,8 +118,14 @@ public partial class ProfilePage : ComponentBase
             if (result == "Success")
             {
                 showSuccessModal = true;
+
+                // جلب البيانات مجدداً لتحديث الروابط والبيانات الطازجة من السيرفر
                 var freshProfile = await MyCustomerService.GetProfileAsync();
-                if (freshProfile != null) userProfile = freshProfile;
+                if (freshProfile != null)
+                {
+                    userProfile = freshProfile;
+                    imagePreview = userProfile.ImageWithIdentity; // تحديث المعاينة بالرابط الجديد من السيرفر
+                }
             }
             else
             {
@@ -126,22 +146,35 @@ public partial class ProfilePage : ComponentBase
         StateHasChanged();
     }
 
+    // 👈 دالة الرفع المحدثة والجذرية لمعالجة الصورة كـ Files وبايتات حقيقية للـ Multipart
     protected async Task HandleImageUpload(InputFileChangeEventArgs e)
     {
         var file = e.File;
         if (file != null)
         {
-            // تم تكبير حجم المعاينة لتناسب الأبعاد الجديدة للهوية 
-            var resizedFile = await file.RequestImageFileAsync("image/png", 600, 400);
-            var buffer = new byte[resizedFile.Size];
-            using var stream = resizedFile.OpenReadStream(maxAllowedSize: 2 * 1024 * 1024);
-            await stream.ReadAsync(buffer);
-
-            imagePreview = $"data:image/png;base64,{Convert.ToBase64String(buffer)}";
-
-            if (userProfile != null)
+            try
             {
-                userProfile.ImageWithIdentity = imagePreview;
+                // 1. تقليص وتجهيز الصورة بأبعاد مناسبة للهوية
+                var resizedFile = await file.RequestImageFileAsync("image/jpeg", 800, 600);
+
+                // 2. قراءة مصفوفة البايتات وحفظها في الذاكرة
+                var buffer = new byte[resizedFile.Size];
+                using var stream = resizedFile.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024); // حد أقصى 5 ميجا للرفع الآمن
+                await stream.ReadAsync(buffer);
+
+                if (userProfile != null)
+                {
+                    // 3. شحن الخصائص الجديدة داخل الـ DTO ليتم حزمها في الـ FormContent عند الحفظ
+                    userProfile.ImageFileBytes = buffer;
+                    userProfile.ImageFileName = file.Name;
+                }
+
+                // 4. إنشاء رابط محلي مؤقت (Base64) لكي يرى المستخدم الصورة فوراً في الصفحة كمعاينة بصرية قبل الضغط على حفظ
+                imagePreview = $"data:image/jpeg;base64,{Convert.ToBase64String(buffer)}";
+            }
+            catch (Exception ex)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"Image upload failed: {ex.Message}");
             }
         }
     }

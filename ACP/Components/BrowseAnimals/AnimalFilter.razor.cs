@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
-using ACP.Models.Animals; // تأكدي من إضافة هذا المسار للوصول لموديل AnimalType
+using ACP.Models.Animals;
+using ACP.Services; // تأكدي من إضافة هذا المسار للوصول لموديل AnimalType
 
 namespace ACP.Components.BrowseAnimals;
 
@@ -15,6 +16,8 @@ public partial class AnimalFilter
     [Parameter] public EventCallback<string> OnSearchChanged { get; set; }
     [Parameter] public EventCallback<int> OnTypeChanged { get; set; }
     [Parameter] public EventCallback<string> OnAgeChanged { get; set; }
+
+
 
     private async Task OnSearchInput(ChangeEventArgs e)
     {
