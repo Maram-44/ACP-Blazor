@@ -1,6 +1,9 @@
 using ACP;
-using ACP.Models.Customers;
-using ACP.Services;
+using ACP.Features.Account;
+using ACP.Features.Animals;
+using ACP.Features.Blogs;
+using ACP.Features.MedicalCenters;
+
 // �� ��������� �� ��� LocalStorage ������
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -41,7 +44,6 @@ builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredServ
 
 
 
-builder.Services.AddHttpClient<AnimalOprationsServices>((sp, client) => { client.BaseAddress = new Uri(apiUrl); }).AddHttpMessageHandler<CookieAndTokenHandler>();
 builder.Services.AddHttpClient<AnimalServices>((sp, client) => { client.BaseAddress = new Uri(apiUrl); }).AddHttpMessageHandler<CookieAndTokenHandler>();
 //builder.Services.AddHttpClient<MedicalCenterReservationService>((sp, client) => { client.BaseAddress = new Uri(apiUrl); }).AddHttpMessageHandler<CookieAndTokenHandler>();
 builder.Services.AddHttpClient<MedicalCenterService>((sp, client) => { client.BaseAddress = new Uri(apiUrl); }).AddHttpMessageHandler<CookieAndTokenHandler>();

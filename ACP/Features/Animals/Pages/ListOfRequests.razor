@@ -1,0 +1,418 @@
+@page "/my-requests"
+@using ACP.Features.Animals
+
+<div class="min-h-screen bg-[#FFF7ED] pt-32 pb-20 px-6">
+    <div class="max-w-4xl mx-auto">
+
+        @* --- Header Section --- *@
+        <div class="mb-12 relative">
+            <h1 class="text-6xl font-[900] text-slate-900 tracking-tighter leading-none mb-4">
+                My <span class="text-orange-500">Happy</span><br />Requests!
+            </h1>
+            <p class="text-slate-500 text-xl font-bold ml-1 flex items-center gap-2">
+                <span class="w-8 h-1 bg-orange-200 rounded-full"></span>
+                Where the magic happens
+            </p>
+            <div class="absolute -top-6 -right-4 text-6xl animate-bounce">✨</div>
+        </div>
+
+        @* --- Alert Feedback Messages --- *@
+        @if (!string.IsNullOrWhiteSpace(PageMessage))
+        {
+            <div class="mb-6 rounded-2xl border-2 px-6 py-4 font-bold @(IsErrorMessage ? "bg-red-50 border-red-200 text-red-700" : "bg-green-50 border-green-200 text-green-700")">
+                @PageMessage
+            </div>
+        }
+
+        @* --- Alert Section --- *@
+        @{
+            var approvedAdoptions = AdoptionRequests.Count(a => a.Status == "Approved");
+            var approvedFosters = FosterRequests.Count(a => a.Status == "Approved");
+            var totalApproved = approvedAdoptions + approvedFosters;
+        }
+
+        @if (totalApproved > 0)
+        {
+            <div class="mb-8 w-full bg-white border-2 border-green-400 rounded-[2.5rem] p-6 shadow-[8px_8px_0px_0px_rgba(74,222,128,0.1)] flex flex-col md:flex-row items-center gap-6 relative overflow-hidden">
+                <div class="bg-green-400 w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-4xl shadow-lg rotate-3 shrink-0 z-10 animate-bounce">
+                    🎊
+                </div>
+
+                <div class="flex-1 relative z-10 text-center md:text-left">
+                    <h2 class="text-2xl font-black text-slate-900 uppercase italic tracking-tighter mb-1">Great News!</h2>
+                    <div class="flex flex-wrap justify-center md:justify-start gap-4 mt-2">
+                        @if (approvedAdoptions > 0)
+                        {
+                            <div class="bg-orange-50 px-4 py-2 rounded-2xl border border-orange-100 flex items-center gap-2">
+                                <span class="text-lg">🐾</span>
+                                <span class="text-slate-700 font-black text-sm">@approvedAdoptions Approved Adoptions</span>
+                            </div>
+                        }
+                        @if (approvedFosters > 0)
+                        {
+                            <div class="bg-blue-50 px-4 py-2 rounded-2xl border border-blue-100 flex items-center gap-2">
+                                <span class="text-lg">🏠</span>
+                                <span class="text-slate-700 font-black text-sm">@approvedFosters Approved Fosters</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-green-50 rounded-full opacity-50 z-0"></div>
+            </div>
+        }
+
+        @* --- Tabs Section --- *@
+        <div class="flex gap-6 mb-12">
+            <button @onclick='() => ChangeTab("Adoption")'
+                    class='px-10 py-5 rounded-[2.5rem] font-black text-lg transition-all duration-300 transform @(ActiveTab == "Adoption" ? "bg-orange-500 text-white shadow-[0_10px_20px_rgba(249,115,22,0.4)] -translate-y-2" : "bg-white text-slate-400 hover:bg-orange-50")'>
+                🏠 Adoption (@AdoptionRequests.Count)
+            </button>
+            <button @onclick='() => ChangeTab("Foster")'
+                    class='px-10 py-5 rounded-[2.5rem] font-black text-lg transition-all duration-300 transform @(ActiveTab == "Foster" ? "bg-blue-500 text-white shadow-[0_10px_20px_rgba(59,130,246,0.4)] -translate-y-2" : "bg-white text-slate-400 hover:bg-blue-50")'>
+                ⏳ Foster (@FosterRequests.Count)
+            </button>
+        </div>
+
+        @* --- Main Content Section --- *@
+        @if (IsLoading)
+        {
+            <div class="flex justify-center py-24">
+                <div class="w-20 h-20 border-[8px] border-slate-200 border-t-orange-500 rounded-full animate-spin"></div>
+            </div>
+        }
+        else
+        {
+            <div class="grid gap-8">
+                @{
+                    var currentList = ActiveTab == "Adoption" ? AdoptionRequests : FosterRequests;
+                }
+
+                @if (!currentList.Any())
+                {
+                    <div class="bg-white rounded-[4rem] py-24 text-center border-[4px] border-dashed border-slate-200">
+                        <div class="text-8xl mb-6">🏜️</div>
+                        <h3 class="text-3xl font-black text-slate-800">So Quiet Here...</h3>
+                        <p class="text-slate-400 font-bold mt-4">Time to fill this place with some paws!</p>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var app in currentList)
+                    {
+                        var isSubmitting = ConfirmingRequestIds.Contains(app.ApplicationId);
+                        var currentCode = InputtedConfirmationCodes.TryGetValue(app.ApplicationId, out var c) ? c : "";
+
+                        <div class="group bg-white rounded-3xl p-6 shadow-sm hover:shadow-xl border-2 border-transparent hover:border-orange-200 transition-all duration-500 flex flex-col lg:flex-row items-center justify-between gap-6">
+
+                            <button @onclick="() => OpenDetailsModal(app)" class="flex items-center gap-6 w-full lg:w-auto text-left bg-transparent border-0 p-0 outline-none cursor-pointer group-hover:no-underline">
+                                @* Pet Image *@
+                                <div class="relative shrink-0">
+                                    <div class="w-24 h-24 overflow-hidden rounded-2xl shadow-inner border-2 border-slate-50 bg-slate-100">
+                                        <img src="@(string.IsNullOrWhiteSpace(app.AnimalImage) ? "https://via.placeholder.com/300" : app.AnimalImage)"
+                                             onerror="this.src='https://via.placeholder.com/300';this.onerror=null;"
+                                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 class="text-3xl font-[1000] text-slate-900 tracking-tighter group-hover:text-orange-500 transition-colors">@app.AnimalName</h3>
+                                    <div class="flex items-center gap-3 mt-2 bg-slate-50 px-4 py-2 rounded-xl w-fit">
+                                        <span class="w-2 h-2 bg-slate-300 rounded-full"></span>
+                                        <span class="text-sm font-black text-slate-400 uppercase tracking-widest">ID: @app.AnimalId</span>
+                                    </div>
+                                </div>
+                            </button>
+
+                            @* قسم العمليات *@
+                            <div class="w-full lg:w-auto text-center">
+                                @if (app.Status == "Approved")
+                                {
+                                    <div class="flex flex-col md:flex-row items-center gap-4 p-3 bg-slate-50/80 rounded-[2rem] border border-slate-100">
+                                        <div class="flex items-center gap-3 px-6 py-3 bg-green-500 text-white rounded-full shadow-lg shrink-0">
+                                            <span class="relative flex h-2 w-2">
+                                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                                <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                                            </span>
+                                            <span class="text-[11px] font-black uppercase tracking-wider">Approved</span>
+                                        </div>
+
+                                        <div class="flex flex-col items-center md:items-start px-4">
+                                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Handover Code</span>
+                                            <div class="flex items-center bg-white p-1.5 rounded-2xl border border-slate-200 shadow-inner">
+                                                <input type="text"
+                                                       placeholder="••••••"
+                                                       maxlength="6"
+                                                       value="@currentCode"
+                                                       @oninput='e => InputtedConfirmationCodes[app.ApplicationId] = e.Value?.ToString() ?? ""'
+                                                       class="bg-transparent w-24 px-2 py-1 text-sm font-bold text-slate-700 outline-none text-center tracking-widest" />
+
+                                                <button disabled="@isSubmitting"
+                                                        @onclick="() => HandleConfirmDelivery(app)"
+                                                        @onclick:stopPropagation="true"
+                                                        class="bg-slate-900 hover:bg-green-600 disabled:opacity-50 text-white px-5 py-2 rounded-xl text-[10px] font-black transition-all active:scale-95">
+                                                    @(isSubmitting ? "SENDING" : "SUBMIT")
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                else if (app.Status == "Rejected")
+                                {
+                                    <div class="bg-slate-100 text-slate-400 px-10 py-4 rounded-full font-black text-sm uppercase tracking-widest">
+                                        Closed
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="bg-white border-4 border-orange-500 text-orange-500 px-10 py-4 rounded-full font-black text-sm uppercase tracking-widest shadow-lg animate-pulse">
+                                        Pending...
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@* --- تفاصيل الحيوان والطلب (Popup / Modal) --- *@
+@if (ShowDetailsModal && SelectedRequest != null)
+{
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-[2.5rem] max-w-2xl w-full overflow-hidden border-4 border-orange-400 shadow-2xl transform transition-all animate-in fade-in zoom-in duration-200">
+
+            <div class="relative h-48 bg-orange-100">
+                <img src="@(string.IsNullOrWhiteSpace(SelectedRequest.AnimalImage) ? "https://via.placeholder.com/600x300" : SelectedRequest.AnimalImage)"
+                     class="w-full h-full object-cover opacity-90" />
+                <div class="absolute inset-0 bg-gradient-to-t i from-slate-950/80 via-slate-950/20 to-transparent"></div>
+                <button @onclick="CloseDetailsModal" class="absolute top-4 right-4 bg-white/80 hover:bg-white text-slate-800 w-10 h-10 rounded-full flex items-center justify-center font-black shadow-md transition-colors">✕</button>
+
+                <div class="absolute bottom-6 left-6 text-white">
+                    <span class="bg-orange-500 text-[10px] uppercase font-black tracking-widest px-3 py-1 rounded-full shadow-sm mb-2 inline-block">
+                        @ActiveTab Request
+                    </span>
+                    <h2 class="text-4xl font-[1000] tracking-tight leading-none">@SelectedRequest.AnimalName</h2>
+                </div>
+            </div>
+
+            <div class="p-8">
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Application ID</span>
+                        <span class="text-lg font-black text-slate-800">#@SelectedRequest.ApplicationId</span>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Animal Status</span>
+                        <span class="text-lg font-black text-orange-500">@SelectedRequest.AnimalStatus</span>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Application Date</span>
+                        <span class="text-sm font-bold text-slate-700">@SelectedRequest.ApplicationDate.ToString("dd MMM yyyy")</span>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Owner Name</span>
+                        <span class="text-sm font-bold text-slate-700">@SelectedRequest.OwnerName</span>
+                    </div>
+                </div>
+
+                @if (SelectedRequest.ReturnDate != null)
+                {
+                    <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 mb-6 flex items-center gap-3">
+                        <span class="text-2xl">⏳</span>
+                        <div>
+                            <span class="text-[10px] font-black text-blue-500 uppercase tracking-widest block">Expected Return Date</span>
+                            <span class="text-sm font-black text-slate-800">@SelectedRequest.ReturnDate?.ToString("dd MMM yyyy")</span>
+                        </div>
+                    </div>
+                }
+
+            <div class="mb-6">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Reason of Application</span>
+                <p class="text-slate-600 bg-orange-50/40 p-4 rounded-2xl border border-orange-100/60 text-sm font-medium leading-relaxed">
+                    @(string.IsNullOrWhiteSpace(SelectedRequest.ReasonOfApplication) ? "No reason provided by the applicant." : SelectedRequest.ReasonOfApplication)
+                </p>
+            </div>
+
+            <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-bold text-slate-400">Request Status:</span>
+                    <span class="font-black text-sm uppercase tracking-wider px-4 py-1.5 rounded-full
+                                    @(SelectedRequest.Status == "Approved" ? "bg-green-100 text-green-700" :
+                                                                SelectedRequest.Status == "Rejected" ? "bg-red-100 text-red-700" : "bg-orange-100 text-orange-700")">
+                        @SelectedRequest.Status
+                    </span>
+                </div>
+                <button @onclick="CloseDetailsModal" class="bg-slate-900 hover:bg-slate-800 text-white font-black px-6 py-3 rounded-xl text-sm transition-all shadow-md">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+@* --- 🔥 بوب اب النجاح والشكر الجديد (Success & Thank You Modal) --- *@
+@if (ShowSuccessModal)
+{
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-[3rem] max-w-md w-full p-8 border-4 border-green-400 shadow-2xl text-center transform transition-all animate-in fade-in zoom-in duration-300 relative overflow-hidden">
+
+            @* تأثير خلفية احتفالي خفيف *@
+            <div class="absolute -top-10 -left-10 w-32 h-32 bg-green-50 rounded-full opacity-60"></div>
+            <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-orange-50 rounded-full opacity-60"></div>
+
+            <div class="relative z-10">
+                @* أنيميشن لطيف للأيقونة *@
+                <div class="w-24 h-24 bg-green-100 text-5xl rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-md border-2 border-green-200 animate-bounce">
+                    ❤️
+                </div>
+
+                <h2 class="text-3xl font-[1000] text-slate-900 tracking-tighter mb-2">Thank You So Much!</h2>
+
+                <p class="text-slate-600 font-bold px-2 leading-relaxed mb-6 text-base">
+                    Your care and kindness make the world a better place for our furry friends. The handover has been successfully verified! 🐾
+                </p>
+
+                <button @onclick="CloseSuccessModalAndRefresh"
+                        class="w-full bg-green-500 hover:bg-green-600 active:scale-95 text-white font-black py-4 px-6 rounded-2xl text-lg transition-all shadow-lg shadow-green-500/30">
+                    You're Welcome! ✨
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Inject] private AnimalTransactionClientService TransactionService { get; set; } = default!;
+
+    private List<MyApplicationDTO> AllRequests { get; set; } = new();
+    private List<MyApplicationDTO> AdoptionRequests { get; set; } = new();
+    private List<MyApplicationDTO> FosterRequests { get; set; } = new();
+
+    private bool ShowDetailsModal { get; set; } = false;
+    private MyApplicationDTO? SelectedRequest { get; set; }
+
+    // 🔥 متغيرات التحكم في بوب اب النجاح الجديد
+    private bool ShowSuccessModal { get; set; } = false;
+
+    private string ActiveTab { get; set; } = "Adoption";
+    private bool IsLoading { get; set; } = true;
+
+    private string PageMessage { get; set; } = "";
+    private bool IsErrorMessage { get; set; } = false;
+
+    private HashSet<int> ConfirmingRequestIds { get; set; } = new();
+    private Dictionary<int, string> InputtedConfirmationCodes { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMyRequestsFromServer();
+    }
+
+    private async Task LoadMyRequestsFromServer()
+    {
+        IsLoading = true;
+        PageMessage = "";
+
+        try
+        {
+            AllRequests = await TransactionService.GetMyApplicationsAsync();
+
+            if (AllRequests != null)
+            {
+                AdoptionRequests = AllRequests.Where(r => r.ReturnDate == null).ToList();
+                FosterRequests = AllRequests.Where(r => r.ReturnDate != null).ToList();
+
+                InputtedConfirmationCodes.Clear();
+                foreach (var app in AllRequests)
+                {
+                    InputtedConfirmationCodes[app.ApplicationId] = "";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            IsErrorMessage = true;
+            PageMessage = $"Could not load your requests: {ex.Message}";
+            Console.WriteLine($"Error loading requests: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void OpenDetailsModal(MyApplicationDTO app)
+    {
+        SelectedRequest = app;
+        ShowDetailsModal = true;
+    }
+
+    private void CloseDetailsModal()
+    {
+        ShowDetailsModal = false;
+        SelectedRequest = null;
+    }
+
+    // 🔥 دالة إغلاق بوب اب النجاح وتحديث البيانات مباشرة
+    private async Task CloseSuccessModalAndRefresh()
+    {
+        ShowSuccessModal = false;
+        await LoadMyRequestsFromServer();
+    }
+
+    private void ChangeTab(string tabName)
+    {
+        ActiveTab = tabName;
+        StateHasChanged();
+    }
+
+    private async Task HandleConfirmDelivery(MyApplicationDTO app)
+    {
+        if (!InputtedConfirmationCodes.TryGetValue(app.ApplicationId, out var code) || string.IsNullOrWhiteSpace(code) || code.Length < 6)
+        {
+            IsErrorMessage = true;
+            PageMessage = "Please enter a valid 6-digit confirmation code.";
+            return;
+        }
+
+        try
+        {
+            ConfirmingRequestIds.Add(app.ApplicationId);
+            PageMessage = "";
+            StateHasChanged();
+
+            var confirmRequest = new ConfirmCodeRequest
+            {
+                TransactionId = app.ApplicationId,
+                Code = code
+            };
+
+            var result = await TransactionService.ConfirmReturnAsync(confirmRequest);
+
+            if (result != null)
+            {
+                // 🔥 كود صحيح! نقوم بإظهار البوب اب السعيد بدلاً من التحديث الصامت
+                IsErrorMessage = false;
+                ShowSuccessModal = true;
+            }
+            else
+            {
+                IsErrorMessage = true;
+                PageMessage = "Invalid code or unauthorized action.";
+            }
+        }
+        catch (Exception ex)
+        {
+            IsErrorMessage = true;
+            PageMessage = $"Error validating code: {ex.Message}";
+        }
+        finally
+        {
+            ConfirmingRequestIds.Remove(app.ApplicationId);
+            StateHasChanged();
+        }
+    }
+}

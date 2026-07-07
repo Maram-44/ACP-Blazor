@@ -1,4 +1,6 @@
-﻿@inject NavigationManager Nav
+﻿@using ACP.Features.Animals
+@inject NavigationManager Nav
+@inject AccountService AccountService
 
 <nav class="fixed w-full z-[100] top-0 bg-white/80 backdrop-blur-md border-b border-slate-100">
     <div class="max-w-7xl mx-auto px-8 md:px-16 py-4 flex justify-between items-center">
@@ -134,8 +136,11 @@
 
     private async Task Logout()
     {
-        // كود تسجيل الخروج
-        Nav.NavigateTo("/login");
+        // استدعاء دالة الخروج لتنظيف الباكيند والفرونت اند
+        await AccountService.LogoutAsync();
+
+        // إعادة توجيه المستخدم يقيناً إلى الصفحة الرئيسية وعمل تحديث كامل لتنظيف الـ State
+        Nav.NavigateTo("/", forceLoad: true);
     }
 
     

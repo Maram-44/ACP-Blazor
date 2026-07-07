@@ -1,0 +1,135 @@
+﻿@namespace ACP.Features.Animals
+
+<section class="relative bg-[#0F172A] min-h-[85vh] flex items-center pt-32 pb-20 overflow-hidden font-sans" dir="ltr">
+
+    @* --- الخلفية الفنية مع توهج الهوية --- *@
+    <div class="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-[#EA580C]/15 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+    @* كلمة الخلفية العملاقة *@
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/[0.02] text-[15rem] lg:text-[23rem] font-black pointer-events-none select-none uppercase tracking-tighter z-0">
+        ANIMALS
+    </div>
+
+    <div class="container mx-auto px-6 md:px-12 lg:px-24 relative z-10">
+        <div class="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+
+            @* --- 1. قسم النصوص الفخم --- *@
+            <div class="w-full lg:flex-1 text-left order-2 lg:order-1">
+                <div class="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 mb-8 backdrop-blur-xl transform hover:scale-105 transition-all">
+                    <span class="flex h-2 w-2 rounded-full bg-[#EA580C] animate-ping"></span>
+                    <span class="text-orange-100/80 text-xs font-black uppercase tracking-[0.3em]">Find Your Bestie 2026</span>
+                </div>
+
+                <h1 class="text-6xl md:text-7xl lg:text-[85px] font-black text-white leading-[0.9] mb-10 tracking-tighter">
+                    Pure <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#EA580C] to-orange-300">Companion</span> <br />
+                    For Your Home
+                </h1>
+
+                <p class="text-slate-400 text-lg lg:text-xl mb-12 max-w-md leading-relaxed font-light italic">
+                    "Because they aren't just pets, they are family." Explore our premium catalog of friendly companions.
+                </p>
+
+                <div class="flex flex-wrap gap-6 items-center">
+                    @* 🟢 ربط زر التبني ليقوم بطلب التمرير للكاردات *@
+                    <button @onclick="HandleAdoptClick" class="px-12 py-5 bg-[#EA580C] text-white font-extrabold rounded-2xl shadow-[0_20px_40px_-10px_rgba(234,88,12,0.5)] hover:bg-[#fb923c] hover:-translate-y-1 transition-all active:scale-95 uppercase tracking-widest text-sm">
+                        ADOPT NOW
+                    </button>
+
+                    @* 🟢 تحويل الرابط إلى زر يطلب التمرير إلى قسم الفلاتر *@
+                    <button @onclick="HandleCategoriesClick" class="group flex items-center gap-3 text-white font-bold hover:text-[#EA580C] transition-colors bg-transparent border-none outline-none">
+                        <span class="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center group-hover:border-[#EA580C] bg-white/5 transition-all">
+                            <i class="fas fa-paw text-xs"></i>
+                        </span>
+                        View Categories
+                    </button>
+                </div>
+            </div>
+
+            @* --- 2. قسم الصور التفاعلي الزجاجي --- *@
+            <div class="w-full lg:flex-1 order-1 lg:order-2">
+                <div class="relative h-[450px] md:h-[550px] w-full max-w-lg mx-auto">
+
+                    @* الصورة 1: يسار أسفل *@
+                    <div class="absolute bottom-10 left-0 z-10 transform -rotate-12 hover:z-50 hover:rotate-0 hover:scale-110 transition-all duration-500 cursor-pointer group">
+                        <div class="w-44 h-56 md:w-56 md:h-72 p-2 rounded-[3rem] bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl overflow-hidden">
+                            <img src="https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg"
+                                 class="w-full h-full object-cover rounded-[2.5rem]" alt="Puppies" />
+                        </div>
+                    </div>
+
+                    @* الصورة 2: المنتصف الكبرى *@
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 transform rotate-3 hover:z-50 hover:rotate-0 hover:scale-110 transition-all duration-500 cursor-pointer">
+                        <div class="w-60 h-76 md:w-64 md:h-80 p-2 rounded-[3.5rem] bg-gradient-to-br from-white/20 to-transparent backdrop-blur-2xl border border-white/30 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.6)] overflow-hidden">
+                            <img src="https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg"
+                                 class="w-full h-full object-cover rounded-[3rem]" alt="Cat" />
+                        </div>
+                    </div>
+
+                    @* الصورة 3: يمين أعلى *@
+                    <div class="absolute top-0 right-0 z-30 transform rotate-12 hover:z-50 hover:rotate-0 hover:scale-110 transition-all duration-500 cursor-pointer group">
+                        <div class="w-44 h-56 md:w-56 md:h-72 p-2 rounded-[3rem] bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl overflow-hidden">
+                            <img src="https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg"
+                                 class="w-full h-full object-cover rounded-[2.5rem] grayscale group-hover:grayscale-0 transition-all duration-500 shadow-inner" alt="Dog" />
+                        </div>
+
+                        @* تاق محصن *@
+                        <div class="absolute -top-4 -right-4 w-20 h-20 bg-[#EA580C] rounded-full flex flex-col items-center justify-center text-white shadow-2xl border-4 border-[#0F172A] pointer-events-none">
+                            <span class="text-xs font-black tracking-tighter uppercase">Vaccinated</span>
+                            <span class="text-[14px] font-black">100%</span>
+                        </div>
+                    </div>
+
+                    @* تاق التقييم *@
+                    <div class="absolute bottom-0 right-4 z-40 animate-float-delayed pointer-events-none">
+                        <div class="bg-white/95 backdrop-blur-md p-4 rounded-3xl shadow-2xl flex items-center gap-3 border border-white/20">
+                            <div class="w-10 h-10 bg-[#FFF7ED] rounded-xl flex items-center justify-center text-[#EA580C]">
+                                <i class="fas fa-heart text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Healthy Pets</p>
+                                <p class="text-lg font-black text-[#0F172A]">Premium</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        @* تاق يحتوي على الفلتر حالياً *@
+        <div id="filterSection" class="mt-16 relative z-50">
+            @ChildContent
+        </div>
+    </div>
+</section>
+
+<style>
+    .animate-float-delayed {
+        animation: float-custom 5s ease-in-out infinite 2s;
+    }
+
+    @@keyframes float-custom {
+        0%, 100%
+
+    {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(-15px, -25px);
+    }
+
+    }
+</style>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    // 🟢 تعريف بارامترات الأحداث لإرسالها للصفحة الأب
+    [Parameter] public EventCallback OnAdoptRequested { get; set; }
+    [Parameter] public EventCallback OnCategoriesRequested { get; set; }
+
+    private async Task HandleAdoptClick() => await OnAdoptRequested.InvokeAsync();
+    private async Task HandleCategoriesClick() => await OnCategoriesRequested.InvokeAsync();
+}

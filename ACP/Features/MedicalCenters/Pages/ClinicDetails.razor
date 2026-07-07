@@ -1,0 +1,214 @@
+﻿@page "/clinic-details/{Id:int}"
+@using ACP.Features.MedicalCenters.DTOs
+@inherits ClinicDetailsBase
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --alef-black: #0F172A;
+        --alef-gray: #94A3B8;
+        --vibrant-orange: #EA580C;
+    }
+
+    .clinic-app-wrapper {
+        font-family: 'Poppins', sans-serif;
+        position: relative;
+        padding: 160px 5% 80px 5%;
+        overflow: hidden;
+        background: radial-gradient(circle at top right, #FFE7D1 0%, transparent 35%), radial-gradient(circle at bottom left, #FFF1E6 0%, transparent 30%), linear-gradient(to bottom, #FFFBF8, #FFFFFF);
+    }
+
+        .clinic-app-wrapper::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: rgba(249, 115, 22, 0.05);
+            border-radius: 50%;
+            top: -150px;
+            right: -100px;
+            z-index: 0;
+        }
+
+    .main-content-layout {
+        position: relative;
+        z-index: 1;
+        max-width: 1300px;
+        margin: 0 auto;
+    }
+
+    .clinic-profile-label {
+        font-weight: 900;
+        color: var(--vibrant-orange);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .hero-title {
+        font-weight: 900;
+        line-height: 1.1;
+    }
+
+    .line-welcome {
+        font-size: clamp(2rem, 4vw, 2.8rem);
+        color: var(--alef-black);
+        font-weight: 800;
+    }
+
+    .line-petcare {
+        font-size: clamp(2.5rem, 6vw, 3.8rem);
+        color: var(--alef-gray);
+        margin: 5px 0;
+    }
+
+    .line-specialized {
+        font-size: clamp(1.8rem, 4vw, 2.6rem);
+        color: var(--vibrant-orange);
+        font-weight: 800;
+    }
+
+    .image-frame {
+        width: 100%;
+        height: 580px;
+        border-radius: 3.5rem;
+        overflow: hidden;
+        box-shadow: 0 40px 80px rgba(15, 23, 42, 0.06);
+        position: relative;
+    }
+
+    .info-boxes-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid rgba(148, 163, 184, 0.1);
+    }
+
+    .info-text {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--alef-black);
+    }
+
+    .info-tag {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--alef-gray);
+        text-transform: uppercase;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .services-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin: 80px 0 40px 0;
+    }
+
+    .services-title {
+        font-weight: 900;
+        color: var(--vibrant-orange);
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.25em;
+    }
+
+    .services-divider {
+        height: 2px;
+        flex-grow: 1;
+        background: var(--vibrant-orange);
+        opacity: 0.15;
+    }
+
+    .service-card {
+        background: white;
+        border-radius: 2.8rem;
+        padding: 3.5rem 1.5rem;
+        transition: all 0.4s ease;
+        text-align: center;
+        border: 1px solid rgba(241, 245, 249, 0.8);
+        cursor: pointer;
+    }
+
+        .service-card.active {
+            background: var(--vibrant-orange);
+            color: white;
+            transform: translateY(-12px);
+            box-shadow: 0 25px 50px rgba(234, 88, 12, 0.2);
+        }
+</style>
+
+<div class="clinic-app-wrapper">
+    <div class="main-content-layout">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+
+            <div class="order-2 lg:order-1">
+                <div class="image-frame">
+                    @if (currentCenter?.medicalCenterServices != null && currentCenter.medicalCenterServices.Any())
+                    {
+                        <img src="@currentCenter.ImagePath" class="w-full h-full object-cover" />
+                    }
+                   @*  <div class="absolute bottom-8 w-full flex justify-center gap-4">
+                        <button @onclick="PrevImage" class="w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center text-slate-800 hover:bg-orange-600 hover:text-white transition-all">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button @onclick="NextImage" class="w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center text-slate-800 hover:bg-orange-600 hover:text-white transition-all">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div> *@
+                </div>
+            </div>
+
+            <div class="order-1 lg:order-2">
+                <div class="clinic-profile-label">
+                    <div class="w-10 h-[3px] bg-orange-600 rounded-full"></div>
+                    Clinic Profile
+                </div>
+
+                <div class="hero-title">
+                    <div class="line-welcome">Welcome to</div>
+
+                    @* جلب الاسم ديناميكياً وفصله بالألوان *@
+                    @{
+                        var nameParts = SplitClinicName(currentCenter?.Name);
+                    }
+                    <div class="line-petcare">@nameParts.grayPart</div>
+                    <div class="line-specialized">@nameParts.orangePart</div>
+                </div>
+
+                <div class="info-boxes-grid">
+                    <div><span class="info-tag">Support Line</span><span class="info-text">@currentCenter?.Phone</span></div>
+                    <div><span class="info-tag">Email Address</span><span class="info-text">@currentCenter?.Email</span></div>
+                    <div><span class="info-tag">Location</span><span class="info-text">@currentCenter?.City</span></div>
+                    <div><span class="info-tag">Address</span><span class="info-text text-slate-500">@currentCenter?.Street</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="services-header">
+            <h3 class="services-title">Our Services</h3>
+            <div class="services-divider"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            @if (currentCenter?.medicalCenterServices != null)
+            {
+                @foreach (var (s, index) in currentCenter.medicalCenterServices.Select((v, i) => (v, i)))
+                {
+                    <div @onclick="() => SelectService(index)" class="service-card @(currentImageIndex == index ? "active" : "")">
+                        <i class="fas fa-paw text-4xl mb-6 @(currentImageIndex == index ? "" : "text-orange-600")"></i>
+                        <span class="text-[13px] font-black uppercase tracking-widest block">@s.ServiceName</span>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
